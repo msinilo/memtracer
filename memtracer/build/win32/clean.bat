@@ -1,0 +1,11 @@
+del /s *.exe
+del /s *.obj
+del  /s *.ncb
+del  /s *.ilk
+del  /s *.idb
+del  /s *.dsw
+del  /s *.pch
+del  /s *.opt
+del  /s *.plg
+del /s *.sdf
+del /s *.tlog

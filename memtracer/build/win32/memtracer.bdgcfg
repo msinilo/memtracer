@@ -1,0 +1,6 @@
+[General]
+Type = StaticLibrary
+SourceFiles = SourceFiles
+
+[Project]
+IncludePaths=../../..

@@ -1,0 +1,9 @@
+..\..\DefaultFunctions.cpp
+..\..\DefaultFunctions.h
+..\..\DefaultSocketWrapperWin32.cpp
+..\..\MemTracer.cpp
+..\..\MemTracer.h
+..\..\RdeWrapper.cpp
+..\..\RdeWrapper.h
+..\..\SocketWrapper.h
+..\..\SPSCQueue.h
