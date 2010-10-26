@@ -1,0 +1,10 @@
+[General]
+Type = ConsoleApplication
+SourceFiles = SourceFiles
+
+[Project]
+IncludePaths=../../..
+
+[Solution]
+Dependencies=memtracer
+DependenciesPaths=../../..
