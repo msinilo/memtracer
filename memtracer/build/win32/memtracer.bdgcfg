@@ -4,3 +4,4 @@ SourceFiles = SourceFiles
 
 [Project]
 IncludePaths=../../..
+Defines=PLATFORM_WIN32

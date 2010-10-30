@@ -13,6 +13,7 @@
 #	include "SPSCQueue.h"
 #endif
 
+#include <algorithm>
 #include <cstring>	// strncpy
 
 namespace
@@ -30,6 +31,7 @@ const size_t	kMaxTagStackDepth		= 4;
 const size_t	kSocketBufferSize		= 16384;
 const size_t	kCallStackEntriesToSkip	= 2;
 const size_t	kMaxTracedVarNameLen	= 16;
+const size_t	kGlobalQueueSize		= 8192;
 
 typedef char MemTag[kMaxTagLen];
 typedef char VarName[kMaxTracedVarNameLen];
@@ -126,7 +128,7 @@ struct AllocInfo
 	void SetTag(const char* stag)
 	{
 		RDE_ASSERT(strlen(stag) >= 4);
-		tag = (stag[0] << 24) | (stag[1] << 16) | (stag[2] << 8) | stag[0];
+		tag = (stag[0] << 24) | (stag[1] << 16) | (stag[2] << 8) | stag[3];
 		tag = ByteSwapToNet32(tag);
 	}
 	
@@ -173,13 +175,39 @@ struct TracedVar
 };
 RDE_COMPILE_CHECK(sizeof(TracedVar) < kMaxPacketSize);
 
+#if RDE_MEMTRACER_SEQUENTIAL
+struct Seq
+{
+	Seq() : m_seq(0) {}
+	rde::Atomic32 Next()
+	{
+		return rde::AtomicInc(m_seq) - 1;
+	}
+	volatile rde::Atomic32 m_seq;
+};
+#else
+struct Seq
+{
+	rde::Atomic32 Next() { return 0; }
+};
+#endif // RDE_MEMTRACER_SEQUENTIAL
+Seq s_seq;
+
 struct Packet
 {
-	explicit Packet(uint8 commandId = 0xFF)
+	explicit Packet(uint8 commandId = 0xFF, long seq_ = 0)
 	:	messageSize(0),
 		command(commandId)
+#if RDE_MEMTRACER_SEQUENTIAL
+		, seq(seq_)
 	{
 	}
+#else
+	{
+		(void)sizeof(seq_);
+	}
+#endif
+
 
 	uint32 CalcPacketSize() const
 	{
@@ -222,9 +250,15 @@ struct Packet
 		messageSize = static_cast<uint8>(packetSize);
 		return messageSize + 1;
 	}
+#if RDE_MEMTRACER_SEQUENTIAL
+	bool operator<(const Packet& rhs) const
+	{
+		return seq < rhs.seq;
+	}
+#endif
 
-	uint8		messageSize;
-	uint8		command;
+	uint8			messageSize;
+	uint8			command;
 	union
 	{
 		AllocInfo		alloc;
@@ -233,11 +267,92 @@ struct Packet
 		SnapshotName	snapshotName;
 		TracedVar		tracedVar;
 	} data;
+	// IMPORTANT: has to be the last member variable, it's not being sent
+	// to tracer application.
+#if RDE_MEMTRACER_SEQUENTIAL
+	rde::Atomic32	seq;
+#endif
 };
 RDE_COMPILE_CHECK(sizeof(Packet) < kMaxPacketSize);
-RDE_COMPILE_CHECK(sizeof(Packet) == sizeof(AllocInfo) + 2);
 RDE_COMPILE_CHECK(sizeof(Packet) < kMaxRuntimePacketSize);
+#if RDE_MEMTRACER_SEQUENTIAL
+RDE_COMPILE_CHECK(sizeof(Packet) == sizeof(AllocInfo) + 2 + 4);
+RDE_COMPILE_CHECK(offsetof(Packet, seq) == sizeof(Packet) - 4);	// seq must be the last member
+#else
+RDE_COMPILE_CHECK(sizeof(Packet) == sizeof(AllocInfo) + 2);
+#endif
+
 #pragma pack(pop)
+
+#if RDE_MEMTRACER_SEQUENTIAL
+class PacketCollection
+{
+public:
+	PacketCollection()
+	:	m_packets(0),
+		m_packetsEnd(0),
+		m_packetsCapacityEnd(0)
+	{
+	}
+	~PacketCollection()
+	{
+		Close();
+	}
+
+	void Init(size_t capacity)
+	{
+		RDE_ASSERT(m_packets == 0);
+		m_packets = new Packet[capacity];
+		m_packetsEnd = m_packets;
+		m_packetsCapacityEnd = m_packets + capacity;
+	}
+	void Close()
+	{
+		if (m_packets)
+		{
+			delete[] m_packets;
+		}
+		m_packets = 0;
+	}
+	
+	Packet* Begin()	{ return m_packets; }
+	Packet* End()	{ return m_packetsEnd; }
+	size_t GetMemoryOverhead() const
+	{
+		return (m_packetsCapacityEnd - m_packets) * sizeof(Packet);
+	}
+
+	bool Add(const Packet& packet)
+	{
+		if (m_packetsEnd == m_packetsCapacityEnd)
+			return false;
+
+		*m_packetsEnd++ = packet;
+		return true;
+	}
+
+	void Reset()
+	{
+		m_packetsEnd = m_packets;
+	}
+	void Sort()
+	{
+		std::sort(m_packets, m_packetsEnd); 
+	}
+
+private:
+	Packet*	m_packets;
+	Packet*	m_packetsEnd;
+	Packet*	m_packetsCapacityEnd;
+};
+#else
+struct PacketCollection
+{
+	void Init(size_t) {}
+	void Close() {}
+	size_t GetMemoryOverhead() const { return 0; }
+};
+#endif // #if RDE_MEMTRACER_SEQUENTIAL
 
 class PacketBuffer
 {
@@ -261,7 +376,25 @@ public:
 		}
 		m_packetQueue.Push(packet);
 	}
-
+#if RDE_MEMTRACER_SEQUENTIAL
+	bool CollectPackets(PacketCollection& coll)
+	{
+		Packet* packet = m_packetQueue.Peek();
+		while (packet)
+		{
+			if (coll.Add(*packet))
+			{
+				m_packetQueue.Pop();
+				packet = m_packetQueue.Peek();
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+#endif
 	void SendPackets(MemTracer::Socket::Handle& h)
 	{
 		Packet* packet = m_packetQueue.Peek();
@@ -312,6 +445,8 @@ struct MemTracerImpl
 		m_packetBuffers = new PacketBuffer[maxTracedThreads];
 		m_maxTracedThreads = maxTracedThreads;
 
+		m_packetCollection.Init(kGlobalQueueSize);
+
 		m_packetBuffersLock = m_hooks.m_pfnMutexCreate();
 		RDE_ASSERT(m_packetBuffersLock);
 	}
@@ -329,10 +464,11 @@ struct MemTracerImpl
 		m_hooks.m_pfnMutexDestroy(m_packetBuffersLock);
 		m_packetBuffersLock = 0;
 		m_hooks.m_pfnThreadJoin(hThread);
+		m_packetCollection.Close();
 	}
 
 	bool IsConnected() const	{ return m_isConnected; }
-	
+
 	void AddPacket(const Packet& packet)
 	{
 		if (t_packetBufferIndex == -1)
@@ -388,9 +524,26 @@ struct MemTracerImpl
 		{
 			if (!m_packetBuffers[i].m_free)
 			{
+#if RDE_MEMTRACER_SEQUENTIAL
+				if (!m_packetBuffers[i].CollectPackets(m_packetCollection))
+				{
+					break;
+				}
+#else
 				m_packetBuffers[i].SendPackets(m_writeSocket);
+#endif
 			}
 		}
+#if RDE_MEMTRACER_SEQUENTIAL
+		m_packetCollection.Sort();
+		for (Packet* p = m_packetCollection.Begin(); p != m_packetCollection.End(); ++p)
+		{
+			const size_t bytesToSend = p->PrepareToSend();
+			size_t bytesWritten(0);
+			MemTracer::Socket::Write(m_writeSocket, p, bytesToSend, bytesWritten); 
+		}
+		m_packetCollection.Reset();
+#endif
 	}
 
 	int ReserveThreadPacketBuffer()
@@ -473,7 +626,7 @@ struct MemTracerImpl
 
 	size_t GetMemoryOverhead() const
 	{
-		return sizeof(PacketBuffer) * m_maxTracedThreads;
+		return sizeof(PacketBuffer) * m_maxTracedThreads + m_packetCollection.GetMemoryOverhead();
 	}
 
 	size_t GetNumTrackedThreads() const
@@ -500,6 +653,7 @@ private:
 	MemTracer::MutexHandle		m_packetBuffersLock;
 	MemTracer::FunctionHooks	m_hooks;
 	PacketBuffer*				m_packetBuffers;
+	PacketCollection			m_packetCollection;
 	int							m_maxTracedThreads;
 	volatile bool				m_isConnected;
 	volatile bool				m_terminating;
@@ -559,7 +713,7 @@ void OnAlloc(const void* ptr, size_t bytes, const char* tag)
 {
 	if (s_tracer.IsConnected())
 	{
-		Packet packet(CommandId::ALLOC);
+		Packet packet(CommandId::ALLOC, s_seq.Next());
 		AllocInfo& info = packet.data.alloc;
 
 		const int numEntries = s_tracer.GetCallStack(&info.callStack[0], kMaxCallStackDepth, kCallStackEntriesToSkip);
@@ -581,7 +735,7 @@ void OnFree(const void* ptr)
 {
 	if (s_tracer.IsConnected())
 	{
-		Packet packet(CommandId::FREE);
+		Packet packet(CommandId::FREE, s_seq.Next());
 		FreeInfo& info = packet.data.free;
 		info.address = ByteSwapAddressToNet(reinterpret_cast<Address>(ptr));
 		s_tracer.AddPacket(packet);
@@ -592,7 +746,7 @@ void TagBlock(const void* ptr, const char* tag)
 {
 	if (s_tracer.IsConnected())
 	{
-		Packet packet(CommandId::TAG);
+		Packet packet(CommandId::TAG, s_seq.Next());
 		TagInfo& info = packet.data.tag;
 		info.address = ByteSwapAddressToNet(reinterpret_cast<Address>(ptr));
 		strncpy(info.tag, tag, kMaxTagLen - 1);
@@ -621,7 +775,7 @@ void AddSnapshot(const char* snapshotName)
 {
 	if (snapshotName && s_tracer.IsConnected())
 	{
-		Packet packet(CommandId::ADD_SNAPSHOT);
+		Packet packet(CommandId::ADD_SNAPSHOT, s_seq.Next());
 		strncpy(packet.data.snapshotName.name, snapshotName, kMaxSnapshotNameLen - 1);
 		s_tracer.AddPacket(packet);
 	}
@@ -631,7 +785,7 @@ void FrameEnd()
 {
 	if (s_tracer.IsConnected())
 	{
-		Packet packet(CommandId::FRAME_END);
+		Packet packet(CommandId::FRAME_END, s_seq.Next());
 		s_tracer.AddPacket(packet);
 	}
 }
@@ -640,7 +794,7 @@ void SetTracedVar(const char* varName, int value)
 {
 	if (s_tracer.IsConnected())
 	{
-		Packet packet(CommandId::TRACED_VAR);
+		Packet packet(CommandId::TRACED_VAR, s_seq.Next());
 		packet.data.tracedVar.Set(varName, value);
 		s_tracer.AddPacket(packet);
 	}

@@ -23,10 +23,14 @@
 #define RDE_COMPILE_CHECK(expr)	typedef char RDE_JOIN_TOKENS(CC_, __LINE__) [(expr) ? 1 : -1]
 
 #if defined(PLATFORM_PS3) || defined(PLATFORM_XENON)
-#	define MemoryReadBarrier	__lwsync
-#	define MemoryWriteBarrier	__lwsync
+// Use lwsync for mem barriers here
 #	define RDE_BIG_ENDIAN		1
 #else // for X86 we're fine with compiler barriers, no need for true mem barriers.
+// I assume MSVC for x86. PS3 GCC is handled in the branch above.
+	extern "C" void __cdecl _ReadBarrier();
+	extern "C" void __cdecl _WriteBarrier();
+#	pragma intrinsic (_ReadBarrier)
+#	pragma intrinsic (_WriteBarrier)
 #	define MemoryReadBarrier	_ReadBarrier
 #	define MemoryWriteBarrier	_WriteBarrier
 #	define RDE_LITTLE_ENDIAN	1
@@ -36,6 +40,7 @@ namespace rde
 {
 typedef unsigned char	uint8;
 typedef unsigned long	uint32;
+typedef long			Atomic32;
 
 namespace Thread
 {
@@ -62,6 +67,18 @@ inline void Store_Release(T& dst, T v)
 	MemoryWriteBarrier();
 	dst = v;
 }
+
+#if defined(PLATFORM_WIN32) || defined(PLATFORM_XENON)
+	extern "C" long __cdecl _InterlockedIncrement(long volatile*);
+#	pragma intrinsic (_InterlockedIncrement)
+	// Returns a new value of i
+	inline Atomic32 AtomicInc(volatile Atomic32& i)
+	{
+		return _InterlockedIncrement(reinterpret_cast<volatile long*>(&i));
+	}
+#else if defined(PLATFORM_PS3)
+	// use Cell atomic here.
+#endif
 
 } // rde
 

@@ -4,6 +4,7 @@ SourceFiles = SourceFiles
 
 [Project]
 IncludePaths=../../..
+ExceptionHandling=2
 
 [Solution]
 Dependencies=memtracer
