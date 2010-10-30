@@ -29,7 +29,7 @@ const size_t	kMaxTagLen				= 64;
 const size_t	kMaxSnapshotNameLen		= 32;
 const size_t	kMaxTagStackDepth		= 4;
 const size_t	kSocketBufferSize		= 16384;
-const size_t	kCallStackEntriesToSkip	= 2;
+const size_t	kCallStackEntriesToSkip	= 1;
 const size_t	kMaxTracedVarNameLen	= 16;
 const size_t	kGlobalQueueSize		= 8192;
 
@@ -613,6 +613,8 @@ struct MemTracerImpl
 			rde::Thread::Sleep(1);
 			SendAllPackets();
 		}
+		// One last time, to send any outstanding pockets out there.
+		SendAllPackets();
 
 		Socket::Close(m_writeSocket);
 		Socket::Close(serverSocket);
@@ -717,6 +719,13 @@ void OnAlloc(const void* ptr, size_t bytes, const char* tag)
 		AllocInfo& info = packet.data.alloc;
 
 		const int numEntries = s_tracer.GetCallStack(&info.callStack[0], kMaxCallStackDepth, kCallStackEntriesToSkip);
+		// Incomplete callstack, not much we can do unfortunately.
+		// It happens sometimes in optimized build, if you're really curious where did the call
+		// come from, you can try putting a breakpoint here.
+		if (numEntries <= 0)
+		{
+			return;
+		}
 
 		info.address = ByteSwapAddressToNet(reinterpret_cast<Address>(ptr));
 		info.bytes = ByteSwapToNet32(static_cast<uint32>(bytes));

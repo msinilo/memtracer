@@ -4,7 +4,6 @@
 #if RDE_MEMTRACER_STANDALONE
 
 #include <cassert>
-#include <intrin.h>
 
 #define RDE_ASSERT			assert
 
@@ -12,6 +11,7 @@
 #	define RDE_THREADLOCAL		__thread
 #	define STDCALL
 #else
+#	include <intrin.h>
 #	define RDE_THREADLOCAL		__declspec(thread)
 #	define STDCALL				__stdcall
 #endif
@@ -27,10 +27,6 @@
 #	define RDE_BIG_ENDIAN		1
 #else // for X86 we're fine with compiler barriers, no need for true mem barriers.
 // I assume MSVC for x86. PS3 GCC is handled in the branch above.
-	extern "C" void __cdecl _ReadBarrier();
-	extern "C" void __cdecl _WriteBarrier();
-#	pragma intrinsic (_ReadBarrier)
-#	pragma intrinsic (_WriteBarrier)
 #	define MemoryReadBarrier	_ReadBarrier
 #	define MemoryWriteBarrier	_WriteBarrier
 #	define RDE_LITTLE_ENDIAN	1
@@ -69,8 +65,6 @@ inline void Store_Release(T& dst, T v)
 }
 
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_XENON)
-	extern "C" long __cdecl _InterlockedIncrement(long volatile*);
-#	pragma intrinsic (_InterlockedIncrement)
 	// Returns a new value of i
 	inline Atomic32 AtomicInc(volatile Atomic32& i)
 	{

@@ -3,7 +3,7 @@
 
 #define RDE_MEMTRACER_ENABLED		1
 #define RDE_MEMTRACER_STANDALONE	1
-#define RDE_MEMTRACER_SEQUENTIAL	1
+#define RDE_MEMTRACER_SEQUENTIAL	0
 
 #include "MemTracer/RdeWrapper.h"
 #include <cstddef>
@@ -122,6 +122,18 @@ inline size_t GetMemoryOverhead() { return 0; }
 inline size_t GetNumTrackedThreads() { return 0; }
 
 #endif
+
+struct TagScope
+{
+	explicit TagScope(const char* tag)
+	{
+		PushTag(tag);
+	}
+	~TagScope()
+	{
+		PopTag();
+	}
+};
 
 } // MemTracer
 

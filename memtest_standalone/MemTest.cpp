@@ -15,44 +15,19 @@
 // NOTE: This application is _intentionally_ very ineffective when
 // it comes to dealing with memory.
 
-void* s_allocated[1000];
-LONG s_numAlloc = 0;
-
-CRITICAL_SECTION csAllocator;
-
 void* MyAlloc(size_t bytes)
 {
-	EnterCriticalSection(&csAllocator);
-
 	void* ptr = malloc(bytes);
 	MemTracer::OnAlloc(ptr, bytes, "SYSM");
-	printf("Allocating %p\n", ptr);
-	s_allocated[s_numAlloc] = ptr;
-	InterlockedIncrement(&s_numAlloc);
-
-	LeaveCriticalSection(&csAllocator);
 	return ptr;
 }
 
 void MyFree(void* ptr)
 {
-	EnterCriticalSection(&csAllocator);
 	if (ptr)
-	{
-		printf("Freeing %p\n", ptr);
-		for (int i = 0; i < s_numAlloc; ++i)
-		{
-			if (s_allocated[i] == ptr)
-			{
-				//s_allocated[i] = 0;
-				break;
-			}
-		}
 		MemTracer::OnFree(ptr);
-	}
 
 	free(ptr);
-	LeaveCriticalSection(&csAllocator);
 }
 
 void* __cdecl operator new(size_t bytes) 
@@ -129,6 +104,7 @@ struct ResourceData
 			{
 				const size_t bytesRead = fread(m_buffer, 1, fileSize, f);
 				RDE_ASSERT(bytesRead == (size_t)fileSize);
+				(void)sizeof(bytesRead);
 				m_bufferSize = (size_t)fileSize;
 			}
 		}
@@ -256,22 +232,21 @@ struct ResourceLoader
 	}
 	void LoadResource(const ResourceStack::ResourceTag& tag)
 	{
-		MemTracer::PushTag(tag.c_str());
-
 		ResourceStack::ResourceTag fullName("c:\\Windows\\System32\\");
 		fullName.append(tag);
 		FILE* f = fopen(fullName.c_str(), "rb");
 		if (f)
 		{
+			MemTracer::PushTag(tag.c_str());
 			ResourceData data;
-			if (data.Load(f))
+			const bool loaded = data.Load(f);
+			MemTracer::PopTag();
+			if (loaded)
 			{
 				m_stack->AddResourceData(data);
 			}
 			fclose(f);
 		}
-
-		MemTracer::PopTag();
 	}
 	bool IsDone() const { return m_done; }
 
@@ -283,7 +258,7 @@ struct ResourceLoader
 static const int kNumLoaders = 9;
 void LoadLevel(ResourceStack& resStack)
 {
-	const int maxResourcesToLoad = 8;
+	const int maxResourcesToLoad = 200;
 
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile("c:\\Windows\\System32\\*.*", &ffd);
@@ -357,8 +332,6 @@ void Frame(MemBlocks& memBlocks)
 
 int __cdecl main(int, char const *[])
 {
-	InitializeCriticalSection(&csAllocator);
-
 	printf("MemTracer: waiting for connection...\n");
 	MemTracer::FunctionHooks hooks;
 	const unsigned short port = 1000;
@@ -381,25 +354,14 @@ int __cdecl main(int, char const *[])
 			Frame(memBlocks);
 		}
 		MemTracer::AddSnapshot("Exiting");
-		printf("*************** Exiting\n");
 		for (MemBlocks::iterator it = memBlocks.begin(); it != memBlocks.end(); ++it)
 			delete *it;
 	}
 	MemTracer::AddSnapshot("Done");
 	MemTracer::FrameEnd();
 
-	for (int i = 0; i < s_numAlloc; ++i)
-	{
-		if (s_allocated[i] != 0)
-		{
-			printf("Not free: %p\n", s_allocated[i]);
-		}
-	}
-
-
 	printf("Done, number of threads generating data: %d\n", MemTracer::GetNumTrackedThreads());
 	MemTracer::Shutdown();
 
-	DeleteCriticalSection(&csAllocator);
 	return 0;
 }
