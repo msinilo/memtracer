@@ -3,7 +3,6 @@
 
 #define RDE_MEMTRACER_ENABLED		1
 #define RDE_MEMTRACER_STANDALONE	1
-#define RDE_MEMTRACER_SEQUENTIAL	0
 
 #include "MemTracer/RdeWrapper.h"
 #include <cstddef>
