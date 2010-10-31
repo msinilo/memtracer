@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{E25B9211-1DD5-43F1-874F-BEA78FDD116A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MemTracer</RootNamespace>
+    <AssemblyName>MemTracer</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="C2DPushGraph, Version=1.0.2525.35540, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\C2DPushGraph.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AllocationPoints.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AllocationPoints.Designer.cs">
+      <DependentUpon>AllocationPoints.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BasicStackTracer.cs" />
+    <Compile Include="CallstackTab.cs" />
+    <Compile Include="CompareSnapshots.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CompareSnapshots.designer.cs">
+      <DependentUpon>CompareSnapshots.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConnectDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConnectDialog.Designer.cs">
+      <DependentUpon>ConnectDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CRC32.cs" />
+    <Compile Include="DbgHelp.cs" />
+    <Compile Include="DiaStackTracer.cs" />
+    <Compile Include="IStackTracer.cs" />
+    <Compile Include="MemAllocTree.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MemAllocTree.Designer.cs">
+      <DependentUpon>MemAllocTree.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MemBlock.cs" />
+    <Compile Include="MemBlockTree.cs" />
+    <Compile Include="MemOperation.cs" />
+    <Compile Include="MemOpTree.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MemOpTree.Designer.cs">
+      <DependentUpon>MemOpTree.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MemSnapshot.cs" />
+    <Compile Include="MemTracerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MemTracerForm.Designer.cs">
+      <DependentUpon>MemTracerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MostAllocatedForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MostAllocatedForm.designer.cs">
+      <DependentUpon>MostAllocatedForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MsgReceiver.cs" />
+    <Compile Include="NewSnapshot.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewSnapshot.Designer.cs">
+      <DependentUpon>NewSnapshot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AllocationPoints.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AllocationPoints.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CompareSnapshots.resx">
+      <DependentUpon>CompareSnapshots.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConnectDialog.resx">
+      <DependentUpon>ConnectDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MemAllocTree.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MemAllocTree.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MemOpTree.resx">
+      <DependentUpon>MemOpTree.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MemTracerForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MemTracerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MostAllocatedForm.resx">
+      <DependentUpon>MostAllocatedForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewSnapshot.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>NewSnapshot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ShowSnapshot.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ShowSnapshot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SnapshotInfoControl.resx">
+      <DependentUpon>SnapshotInfoControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SnapshotList.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SnapshotList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SubtreeDetails.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>SubtreeDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TracedVars.resx">
+      <DependentUpon>TracedVars.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="ShowSnapshot.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ShowSnapshot.Designer.cs">
+      <DependentUpon>ShowSnapshot.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SnapshotInfoControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SnapshotInfoControl.designer.cs">
+      <DependentUpon>SnapshotInfoControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SnapshotList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SnapshotList.Designer.cs">
+      <DependentUpon>SnapshotList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SubtreeDetails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SubtreeDetails.Designer.cs">
+      <DependentUpon>SubtreeDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TagDict.cs" />
+    <Compile Include="TracedVars.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TracedVars.designer.cs">
+      <DependentUpon>TracedVars.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Dia2Lib">
+      <Guid>{106173A0-0173-4E5C-84E7-E915422BE997}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
