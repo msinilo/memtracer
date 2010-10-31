@@ -12,7 +12,7 @@
 
 namespace
 {
-const int kMaxLoadedModules = 64;
+const int kMaxLoadedModules = 16;
 MemTracer::ModuleInfo	s_loadedModules[kMaxLoadedModules];
 int						s_numLoadedModules(0);
 

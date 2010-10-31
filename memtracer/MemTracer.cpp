@@ -16,6 +16,11 @@
 #include <algorithm>
 #include <cstring>	// strncpy
 
+// Setting this to true makes sure that messages sent in one batch
+// are ordered same as they were generated (when they come from different threads).
+// It has a slight memory/performance overhead.
+#define RDE_MEMTRACER_SEQUENTIAL	1
+
 namespace
 {
 using MemTracer::Address;
@@ -181,7 +186,7 @@ struct Seq
 	Seq() : m_seq(0) {}
 	rde::Atomic32 Next()
 	{
-		return rde::AtomicInc(m_seq) - 1;
+		return rde::AtomicInc(m_seq);// - 1;
 	}
 	volatile rde::Atomic32 m_seq;
 };
@@ -535,6 +540,8 @@ struct MemTracerImpl
 			}
 		}
 #if RDE_MEMTRACER_SEQUENTIAL
+		// TODO: Deal with Socket::Write failures.
+		// (right now packet is lost).
 		m_packetCollection.Sort();
 		for (Packet* p = m_packetCollection.Begin(); p != m_packetCollection.End(); ++p)
 		{
