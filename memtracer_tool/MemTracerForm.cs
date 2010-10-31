@@ -855,7 +855,8 @@ namespace MemTracer
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("MemTracer v0.3b\nCopyright (C) 2008-2010 Maciej Sinilo\n", "About", MessageBoxButtons.OK);
+            MessageBox.Show("MemTracer v0.3b\nCopyright (C) 2008-2010 Maciej Sinilo\nC2DPushGraph library copyright (C) Stuart Konen\n", 
+                "About", MessageBoxButtons.OK);
         }
 
         private void numericUpDownSpeed_ValueChanged(object sender, EventArgs e)
