@@ -77,6 +77,9 @@ namespace MemTracer
             ms_MainForm = this;
 
             StackTracer = new DiaStackTracer();
+
+            EnableTabPage(tabPageFrameSnapshot, frameAnalysisToolStripMenuItem.Checked);
+            EnableTabPage(tabPageFrameOps, frameAnalysisToolStripMenuItem.Checked);
         }
 
         [Serializable]
@@ -179,10 +182,10 @@ namespace MemTracer
             CloseSocket();
 
             butConnect.Text = "Connect";
-            EnableTabPage(tabPageFrameSnapshot, true);
-            EnableTabPage(tabPageFrameOps, true);
+            EnableTabPage(tabPageFrameSnapshot, frameAnalysisToolStripMenuItem.Checked);
+            EnableTabPage(tabPageFrameOps, frameAnalysisToolStripMenuItem.Checked);
 
-            SetControlButtonsState(true);
+            SetControlButtonsState(frameAnalysisToolStripMenuItem.Checked);
             GoToFrame(0);
         }
 
@@ -827,18 +830,21 @@ namespace MemTracer
 
         private void GoToFrame(int frame)
         {
-            m_frame = frame;
-            MemSnapshot ms = BuildSnapshotForFrame(m_frame);
-            memAllocTreeFrame.BuildTree(ms);
-            memOpTree1.BuildTree(BuildOperationsListForFrame(m_frame));
+            if (frameAnalysisToolStripMenuItem.Checked)
+            {
+                m_frame = frame;
+                MemSnapshot ms = BuildSnapshotForFrame(m_frame);
+                memAllocTreeFrame.BuildTree(ms);
+                memOpTree1.BuildTree(BuildOperationsListForFrame(m_frame));
 
-            toolStripStatusFrame.Text = "Frame: " + m_frame.ToString() + "/" + m_numFrames.ToString();
-            UpdateUsageGraph((int)ms.NumAllocatedBytes >> 10);
+                toolStripStatusFrame.Text = "Frame: " + m_frame.ToString() + "/" + m_numFrames.ToString();
+                UpdateUsageGraph((int)ms.NumAllocatedBytes >> 10);
 
-            butRewind.Enabled = (m_frame > 0);
-            butPrevFrame.Enabled = (m_frame > 0);
-            butFFwd.Enabled = (m_frame < m_numFrames);
-            butNextFrame.Enabled = (m_frame < m_numFrames);
+                butRewind.Enabled = (m_frame > 0);
+                butPrevFrame.Enabled = (m_frame > 0);
+                butFFwd.Enabled = (m_frame < m_numFrames);
+                butNextFrame.Enabled = (m_frame < m_numFrames);
+            }
         }
 
         void SetTracedVar(string name, int value)
@@ -862,6 +868,13 @@ namespace MemTracer
         private void numericUpDownSpeed_ValueChanged(object sender, EventArgs e)
         {
             m_ticksToNextFrame = 100 / (int)numericUpDownSpeed.Value;
+        }
+
+        private void frameAnalysisToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            EnableTabPage(tabPageFrameSnapshot, frameAnalysisToolStripMenuItem.Checked);
+            EnableTabPage(tabPageFrameOps, frameAnalysisToolStripMenuItem.Checked);
+            SetControlButtonsState(frameAnalysisToolStripMenuItem.Checked);
         }
     }
 }

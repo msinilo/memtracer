@@ -70,6 +70,7 @@
             this.toolStripStatusFrame = new System.Windows.Forms.ToolStripStatusLabel();
             this.numericUpDownSpeed = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
+            this.frameAnalysisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -192,7 +193,8 @@
             this.addSnapshotToolStripMenuItem,
             this.mostAllocatedBlocksToolStripMenuItem,
             this.allocationPointsToolStripMenuItem,
-            this.tracedVariablesToolStripMenuItem});
+            this.tracedVariablesToolStripMenuItem,
+            this.frameAnalysisToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(45, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
@@ -468,6 +470,14 @@
             this.label1.TabIndex = 15;
             this.label1.Text = "Replay speed";
             // 
+            // frameAnalysisToolStripMenuItem
+            // 
+            this.frameAnalysisToolStripMenuItem.CheckOnClick = true;
+            this.frameAnalysisToolStripMenuItem.Name = "frameAnalysisToolStripMenuItem";
+            this.frameAnalysisToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.frameAnalysisToolStripMenuItem.Text = "Frame Analysis";
+            this.frameAnalysisToolStripMenuItem.CheckedChanged += new System.EventHandler(this.frameAnalysisToolStripMenuItem_CheckedChanged);
+            // 
             // MemTracerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -546,6 +556,7 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusFrame;
         private System.Windows.Forms.NumericUpDown numericUpDownSpeed;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ToolStripMenuItem frameAnalysisToolStripMenuItem;
     }
 }
 
