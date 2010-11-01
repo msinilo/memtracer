@@ -65,13 +65,13 @@ inline void Store_Release(T& dst, T v)
 }
 
 #if defined(PLATFORM_WIN32) || defined(PLATFORM_XENON)
-	// Returns a new value of i
-	inline Atomic32 AtomicInc(volatile Atomic32& i)
-	{
-		return _InterlockedIncrement(reinterpret_cast<volatile long*>(&i));
-	}
+// Returns a new value of i
+inline Atomic32 AtomicInc(volatile Atomic32& i)
+{
+	return _InterlockedIncrement(reinterpret_cast<volatile long*>(&i));
+}
 #else if defined(PLATFORM_PS3)
-	// use Cell atomic here.
+// use Cell atomic here.
 #endif
 
 } // rde

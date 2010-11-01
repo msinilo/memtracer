@@ -1,6 +1,6 @@
 #include "DefaultFunctions.h"
 
-#if RDE_MEMTRACER_ENABLED
+#if RDE_MEMTRACER_NEED_DEFAULT_FUNCTIONS
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -181,5 +181,5 @@ void DefaultLog(const char*) {}
 
 } // MemTracer
 
-#endif
+#endif // RDE_MEMTRACER_NEED_DEFAULT_FUNCTIONS
 
