@@ -13,13 +13,16 @@
 #	include "SPSCQueue.h"
 #endif
 
-#include <algorithm>
 #include <cstring>	// strncpy
 
 // Setting this to true makes sure that messages sent in one batch
 // are ordered same as they were generated (when they come from different threads).
 // It has a slight memory/performance overhead.
 #define RDE_MEMTRACER_SEQUENTIAL	1
+
+#if RDE_MEMTRACER_SEQUENTIAL
+#include <cstdlib>
+#endif
 
 namespace
 {
@@ -186,7 +189,7 @@ struct Seq
 	Seq() : m_seq(0) {}
 	rde::Atomic32 Next()
 	{
-		return rde::AtomicInc(m_seq);// - 1;
+		return rde::AtomicInc(m_seq) - 1;
 	}
 	volatile rde::Atomic32 m_seq;
 };
@@ -283,6 +286,16 @@ RDE_COMPILE_CHECK(sizeof(Packet) < kMaxRuntimePacketSize);
 #if RDE_MEMTRACER_SEQUENTIAL
 RDE_COMPILE_CHECK(sizeof(Packet) == sizeof(AllocInfo) + 2 + 4);
 RDE_COMPILE_CHECK(offsetof(Packet, seq) == sizeof(Packet) - 4);	// seq must be the last member
+int PacketCompare(const void* lhs, const void* rhs)
+{
+	const Packet& pa = *(const Packet*)lhs;
+	const Packet& pb = *(const Packet*)rhs;
+	if (pa.seq < pb.seq)
+		return -1;
+	if (pa.seq > pb.seq)
+		return 1;
+	return 0;
+}
 #else
 RDE_COMPILE_CHECK(sizeof(Packet) == sizeof(AllocInfo) + 2);
 #endif
@@ -342,7 +355,7 @@ public:
 	}
 	void Sort()
 	{
-		std::sort(m_packets, m_packetsEnd); 
+		qsort(m_packets, m_packetsEnd - m_packets, sizeof(m_packets[0]), PacketCompare);
 	}
 
 private:
