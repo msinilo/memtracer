@@ -39,6 +39,9 @@ const size_t	kSocketBufferSize		= 16384;
 const size_t	kCallStackEntriesToSkip	= 1;
 const size_t	kMaxTracedVarNameLen	= 16;
 const size_t	kGlobalQueueSize		= 8192;
+const size_t	kLocalQueueSize			= 8192;
+// Local queue size must be power of two.
+RDE_COMPILE_CHECK((kLocalQueueSize & (kLocalQueueSize - 1)) == 0);
 
 typedef char MemTag[kMaxTagLen];
 typedef char VarName[kMaxTracedVarNameLen];
@@ -377,8 +380,6 @@ public:
 	PacketBuffer()
 	:	m_free(true)
 	{
-		// Queue size must be power of two.
-		RDE_COMPILE_CHECK((MAX_PACKETS_IN_BUFFER & (MAX_PACKETS_IN_BUFFER - 1)) == 0);
 	}
 
 	void AddPacket(const Packet& packet)
@@ -435,7 +436,7 @@ public:
 	bool	m_free;
 
 private:
-	enum { MAX_PACKETS_IN_BUFFER	= 8192 };
+	enum { MAX_PACKETS_IN_BUFFER	= kLocalQueueSize };
 
 	rde::SPSCQueue<Packet, MAX_PACKETS_IN_BUFFER>	m_packetQueue;
 };
@@ -573,6 +574,7 @@ struct MemTracerImpl
 		// is the last one (rely on the fact that it's most likely to be the first
 		// one trying to send message). This means EndFrame event should be sent after
 		// memory operations from that frame.
+		// (doesn't matter in SEQUENTIAL mode).
 		for (int i = m_maxTracedThreads - 1; i >= 0; --i)
 		{
 			if (m_packetBuffers[i].m_free)
@@ -751,6 +753,7 @@ void OnAlloc(const void* ptr, size_t bytes, const char* tag)
 		info.depth = static_cast<uint8>(numEntries);
 		if (tag)
 			info.SetTag(tag);
+
 		info.ReverseCallStack();
 		s_tracer.AddPacket(packet);
 
