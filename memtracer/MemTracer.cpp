@@ -627,14 +627,13 @@ struct MemTracerImpl
 
 		OnConnection();
 
-		MemoryWriteBarrier();
 		m_isConnected = true;
 		while (!m_terminating && m_writeSocket)
 		{
 			rde::Thread::Sleep(1);
 			SendAllPackets();
 		}
-		// One last time, to send any outstanding pockets out there.
+		// One last time, to send any outstanding packets out there.
 		SendAllPackets();
 
 		Socket::Close(m_writeSocket);
