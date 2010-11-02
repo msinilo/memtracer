@@ -1,8 +1,6 @@
 #ifndef MEMTRACER_SOCKET_WRAPPER_H
 #define MEMTRACER_SOCKET_WRAPPER_H
 
-#include "MemTracer/MemTracer.h"
-
 // Undefine if you prefer to provide your own socket functions.
 // Link with your own .cpp containing definitions of functions listed here.
 #define RDE_MEMTRACER_USE_DEFAULT_SOCKET_WRAPPER	1

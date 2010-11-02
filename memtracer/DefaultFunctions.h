@@ -1,7 +1,7 @@
 #ifndef MEMTRACER_DEFAULTFUNCTIONS_H
 #define MEMTRACER_DEFAULTFUNCTIONS_H
 
-#include "MemTracer/MemTracer.h"
+#include "MemTracer.h"
 
 //#define RDE_MEMTRACER_NEED_DEFAULT_FUNCTIONS	0
 

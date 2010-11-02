@@ -1,4 +1,5 @@
 #include "SocketWrapper.h"
+#include "MemTracer.h"
 
 #if (RDE_MEMTRACER_ENABLED) && (RDE_MEMTRACER_USE_DEFAULT_SOCKET_WRAPPER)
 

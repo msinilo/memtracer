@@ -41,7 +41,7 @@ typedef long			Atomic32;
 namespace Thread
 {
 void Sleep(long millis);
-};
+}
 
 template<typename T>
 inline T Load_Relaxed(const T& v)

@@ -2,7 +2,6 @@
 
 #if RDE_MEMTRACER_ENABLED
 
-#include "RdeWrapper.h"
 #include "DefaultFunctions.h"
 #include "SocketWrapper.h"
 #if !RDE_MEMTRACER_STANDALONE
