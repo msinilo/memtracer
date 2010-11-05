@@ -78,8 +78,8 @@ namespace MemTracer
 
             StackTracer = new DiaStackTracer();
 
-            EnableTabPage(tabPageFrameSnapshot, frameAnalysisToolStripMenuItem.Checked);
-            EnableTabPage(tabPageFrameOps, frameAnalysisToolStripMenuItem.Checked);
+            EnableTabPage(tabPageFrameSnapshot, IsFrameAnalysisEnabled());
+            EnableTabPage(tabPageFrameOps, IsFrameAnalysisEnabled());
         }
 
         [Serializable]
@@ -182,10 +182,10 @@ namespace MemTracer
             CloseSocket();
 
             butConnect.Text = "Connect";
-            EnableTabPage(tabPageFrameSnapshot, frameAnalysisToolStripMenuItem.Checked);
-            EnableTabPage(tabPageFrameOps, frameAnalysisToolStripMenuItem.Checked);
+            EnableTabPage(tabPageFrameSnapshot, IsFrameAnalysisEnabled());
+            EnableTabPage(tabPageFrameOps, IsFrameAnalysisEnabled());
 
-            SetControlButtonsState(frameAnalysisToolStripMenuItem.Checked);
+            SetControlButtonsState(IsFrameAnalysisEnabled());
             GoToFrame(0);
         }
 
@@ -872,9 +872,13 @@ namespace MemTracer
 
         private void frameAnalysisToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            EnableTabPage(tabPageFrameSnapshot, frameAnalysisToolStripMenuItem.Checked);
-            EnableTabPage(tabPageFrameOps, frameAnalysisToolStripMenuItem.Checked);
-            SetControlButtonsState(frameAnalysisToolStripMenuItem.Checked);
+            EnableTabPage(tabPageFrameSnapshot, IsFrameAnalysisEnabled());
+            EnableTabPage(tabPageFrameOps, IsFrameAnalysisEnabled());
+            SetControlButtonsState(IsFrameAnalysisEnabled());
+        }
+        private bool IsFrameAnalysisEnabled()
+        {
+            return frameAnalysisToolStripMenuItem.Checked && m_numFrames > 0;
         }
     }
 }
