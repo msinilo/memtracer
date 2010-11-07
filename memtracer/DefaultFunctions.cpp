@@ -10,6 +10,12 @@
 
 #pragma comment(lib, "dbghelp.lib")
 
+// Whether we should check stack trace call addresses with
+// IsBadReadPtr. It normally should not be necessary and slows DefaultCallStackGet
+// down quite a bit. However, there are situations, where walking the stack may
+// result in crashes. Enable if needed.
+//#define RDE_EXTRA_POINTER_CHECK	1
+
 namespace
 {
 const int kMaxLoadedModules = 16;
@@ -73,6 +79,16 @@ void EnumerateModules()
 	}
 }
 
+#if RDE_EXTRA_POINTER_CHECK
+bool IsPtrOk(const void* ptr)
+{
+	return !IsBadReadPtr(ptr, sizeof(MemTracer::Address));
+}
+#else
+__forceinline bool IsPtrOk(const void*) { return true; }
+#endif
+
+
 } // namespace
 
 namespace MemTracer
@@ -128,6 +144,10 @@ int DefaultCallStackGet(Address* callStack, int maxDepth, int numEntriesToSkip)
 	uintptr_t ebpReg;
 	__asm mov [ebpReg], ebp
 	Address* sp = (Address*)ebpReg;
+
+	if (!IsPtrOk(sp + 1))
+		return 0;
+
 	int numEntries(0);
 	while (sp && numEntries < maxDepth)
 	{
@@ -137,6 +157,8 @@ int DefaultCallStackGet(Address* callStack, int maxDepth, int numEntriesToSkip)
 			callStack[numEntries++] = sp[1];
 
 		sp = ::GetNextStackFrame(sp);
+		if (!IsPtrOk(sp + 1))
+			break;
 	}
 	return numEntries;
 }
