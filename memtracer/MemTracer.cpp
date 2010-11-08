@@ -51,6 +51,8 @@ inline uint32 ByteSwap32(uint32 i)
 	return (0xFF & i) << 24 | (0xFF00 & i) << 8 | (0xFF0000 & i) >> 8 | (0xFF000000 & i) >> 24;
 }
 
+// For the time being only 32-bit pointers are supported.
+// Compile time error for other architectures.
 template<size_t N> struct PtrSizeHelper {};
 template<> struct PtrSizeHelper<4>
 {
@@ -260,12 +262,6 @@ struct Packet
 		messageSize = static_cast<uint8>(packetSize);
 		return messageSize + 1;
 	}
-#if RDE_MEMTRACER_SEQUENTIAL
-	bool operator<(const Packet& rhs) const
-	{
-		return seq < rhs.seq;
-	}
-#endif
 
 	uint8			messageSize;
 	uint8			command;
@@ -342,6 +338,7 @@ public:
 		return (m_packetsCapacityEnd - m_packets) * sizeof(Packet);
 	}
 
+	// False if not enough space, packet not added.
 	bool Add(const Packet& packet)
 	{
 		if (m_packetsEnd == m_packetsCapacityEnd)
@@ -456,7 +453,7 @@ struct MemTracerImpl
 	{
 	}
 
-	void Init(unsigned short port, int maxTracedThreads, const MemTracer::FunctionHooks& hooks)
+	bool Init(unsigned short port, int maxTracedThreads, const MemTracer::FunctionHooks& hooks)
 	{
 		m_port = port;		
 		m_hooks = hooks;
@@ -467,6 +464,8 @@ struct MemTracerImpl
 
 		m_packetBuffersLock = m_hooks.m_pfnMutexCreate();
 		RDE_ASSERT(m_packetBuffersLock);
+
+		return m_packetBuffers != 0 && m_packetBuffersLock != 0;
 	}
 	void Close(MemTracer::ThreadHandle hThread)
 	{
@@ -711,9 +710,13 @@ FunctionHooks::FunctionHooks()
 
 bool Init(FunctionHooks& hooks, unsigned short port, int maxTracedThreads, BlockingMode::Enum mode)
 {
-	s_tracer.Init(port, maxTracedThreads, hooks);
+	if (!s_tracer.Init(port, maxTracedThreads, hooks))
+	{
+		return false;
+	}
 	if (!Socket::InitSockets())
 	{
+		hooks.m_pfnLog("MemTracer: Failed to initialize sockets.\n");
 		return false;
 	}
 	s_tracerThread = hooks.m_pfnThreadFork((ThreadFunction*)&MemTracer_ThreadFunc, &s_tracer, 16 * 1024);

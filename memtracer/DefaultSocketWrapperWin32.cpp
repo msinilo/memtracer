@@ -93,7 +93,7 @@ Socket::Handle Socket::Accept(Handle listeningSocket, size_t bufferSize)
 	SOCKET outSocket = ::accept(::AsWinSocket(listeningSocket), (sockaddr*)&addr, &len);
 	if (outSocket != SOCKET_ERROR)
 	{
-		int sizeOfBufSize = sizeof(bufferSize);
+		const int sizeOfBufSize = sizeof(bufferSize);
 		::setsockopt(outSocket, SOL_SOCKET, SO_RCVBUF, (const char*)&bufferSize, sizeOfBufSize);
 		::setsockopt(outSocket, SOL_SOCKET, SO_SNDBUF, (const char*)&bufferSize, sizeOfBufSize);
 		return Handle(outSocket);
@@ -105,7 +105,7 @@ bool Socket::Write(Handle& h, const void* buffer, size_t bytes, size_t& outBytes
 {
 	outBytesWritten = 0;
 	if (bytes == 0 || !h)
-		return true;
+		return bytes == 0;
 
 	const int res = ::send(::AsWinSocket(h), (const char*)buffer, (int)bytes, 0);
 	if (res == SOCKET_ERROR)
@@ -123,6 +123,6 @@ bool Socket::Write(Handle& h, const void* buffer, size_t bytes, size_t& outBytes
 	return outBytesWritten != 0;
 }
 
-}
+} // MemTracer
 
-#endif
+#endif // #if (RDE_MEMTRACER_ENABLED) && (RDE_MEMTRACER_USE_DEFAULT_SOCKET_WRAPPER)

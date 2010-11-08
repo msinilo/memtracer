@@ -145,20 +145,18 @@ int DefaultCallStackGet(Address* callStack, int maxDepth, int numEntriesToSkip)
 	__asm mov [ebpReg], ebp
 	Address* sp = (Address*)ebpReg;
 
-	if (!IsPtrOk(sp + 1))
-		return 0;
-
 	int numEntries(0);
 	while (sp && numEntries < maxDepth)
 	{
+		if (!IsPtrOk(sp + 1))
+			break;
+
 		if (numEntriesToSkip > 0)
 			--numEntriesToSkip;
 		else
 			callStack[numEntries++] = sp[1];
 
 		sp = ::GetNextStackFrame(sp);
-		if (!IsPtrOk(sp + 1))
-			break;
 	}
 	return numEntries;
 }
