@@ -13,6 +13,7 @@ namespace MemTracer
 typedef const void*	Address;
 typedef void*		ThreadHandle;
 typedef void*		MutexHandle;
+typedef const char	Tag4CC[4];
 
 struct ModuleInfo
 {
@@ -94,11 +95,16 @@ namespace Platform
 // Returns true on success/false on error.
 bool Init(FunctionHooks& hooks, unsigned short port, int maxTracedThreads, BlockingMode::Enum mode);
 void Shutdown();
-void OnAlloc(const void* ptr, size_t bytes, const char* tag);
+
+// Tag == 4CC
+void OnAlloc(const void* ptr, size_t bytes, Tag4CC tag);
 void OnFree(const void* ptr);
+
+// Tag == ASCIIZ
 void TagBlock(const void* ptr, const char* tag);
 void PushTag(const char* tag);
 void PopTag();
+
 void AddSnapshot(const char* snapshotName);
 void FrameEnd();
 void SetTracedVar(const char* varName, int value);
@@ -109,7 +115,7 @@ size_t GetNumTrackedThreads();
 
 inline bool Init(FunctionHooks&, unsigned short, int, BlockingMode::Enum) { return true; }
 inline void Shutdown() {}
-inline void OnAlloc(const void*, size_t, const char*) {}
+inline void OnAlloc(const void*, size_t, Tag4CC) {}
 inline void OnFree(const void*) {}
 inline void TagBlock(const void*, const char*) {}
 inline void PushTag(const char*) {}

@@ -137,10 +137,9 @@ struct AllocInfo
 		}
 	}
 
-	void SetTag(const char* stag)
+	void SetTag(MemTracer::Tag4CC tag4cc)
 	{
-		RDE_ASSERT(strlen(stag) >= 4);
-		tag = (stag[0] << 24) | (stag[1] << 16) | (stag[2] << 8) | stag[3];
+		tag = (tag4cc[0] << 24) | (tag4cc[1] << 16) | (tag4cc[2] << 8) | tag4cc[3];
 		tag = ByteSwapToNet32(tag);
 	}
 	
@@ -734,7 +733,7 @@ void Shutdown()
 	Socket::ShutdownSockets();
 }
 
-void OnAlloc(const void* ptr, size_t bytes, const char* tag)
+void OnAlloc(const void* ptr, size_t bytes, Tag4CC tag)
 {
 	if (s_tracer.IsConnected())
 	{
@@ -753,8 +752,7 @@ void OnAlloc(const void* ptr, size_t bytes, const char* tag)
 		info.address = ByteSwapAddressToNet(reinterpret_cast<Address>(ptr));
 		info.bytes = ByteSwapToNet32(static_cast<uint32>(bytes));
 		info.depth = static_cast<uint8>(numEntries);
-		if (tag)
-			info.SetTag(tag);
+		info.SetTag(tag);
 
 		info.ReverseCallStack();
 		s_tracer.AddPacket(packet);
