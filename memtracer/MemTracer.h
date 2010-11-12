@@ -17,11 +17,11 @@ typedef const char	Tag4CC[4];
 
 struct ModuleInfo
 {
-	enum { MAX_PATH	= 128 };		
+	enum { MAX_PATH_LEN	= 128 };		
 
 	unsigned long	moduleBase;
 	unsigned long	moduleSize;
-	char			debugInfoFile[MAX_PATH];
+	char			debugInfoFile[MAX_PATH_LEN];
 };
 
 typedef unsigned (STDCALL ThreadFunction)(void* arg);
