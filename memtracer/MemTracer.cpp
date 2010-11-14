@@ -39,7 +39,7 @@ const size_t	kSocketBufferSize		= 16384;
 const size_t	kCallStackEntriesToSkip	= 1;
 const size_t	kMaxTracedVarNameLen	= 16;
 const size_t	kGlobalQueueSize		= 8192;
-const size_t	kLocalQueueSize			= 8192;
+const size_t	kLocalQueueSize			= 4096;
 // Local queue size must be power of two.
 RDE_COMPILE_CHECK((kLocalQueueSize & (kLocalQueueSize - 1)) == 0);
 
