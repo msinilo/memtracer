@@ -46,6 +46,7 @@
             this.mostAllocatedBlocksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allocationPointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tracedVariablesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.frameAnalysisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
@@ -70,7 +71,6 @@
             this.toolStripStatusFrame = new System.Windows.Forms.ToolStripStatusLabel();
             this.numericUpDownSpeed = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
-            this.frameAnalysisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -226,6 +226,14 @@
             this.tracedVariablesToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.tracedVariablesToolStripMenuItem.Text = "Traced Variables";
             this.tracedVariablesToolStripMenuItem.Click += new System.EventHandler(this.tracedVariablesToolStripMenuItem_Click);
+            // 
+            // frameAnalysisToolStripMenuItem
+            // 
+            this.frameAnalysisToolStripMenuItem.CheckOnClick = true;
+            this.frameAnalysisToolStripMenuItem.Name = "frameAnalysisToolStripMenuItem";
+            this.frameAnalysisToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.frameAnalysisToolStripMenuItem.Text = "Frame Analysis";
+            this.frameAnalysisToolStripMenuItem.CheckedChanged += new System.EventHandler(this.frameAnalysisToolStripMenuItem_CheckedChanged);
             // 
             // helpToolStripMenuItem
             // 
@@ -469,14 +477,6 @@
             this.label1.Size = new System.Drawing.Size(72, 13);
             this.label1.TabIndex = 15;
             this.label1.Text = "Replay speed";
-            // 
-            // frameAnalysisToolStripMenuItem
-            // 
-            this.frameAnalysisToolStripMenuItem.CheckOnClick = true;
-            this.frameAnalysisToolStripMenuItem.Name = "frameAnalysisToolStripMenuItem";
-            this.frameAnalysisToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
-            this.frameAnalysisToolStripMenuItem.Text = "Frame Analysis";
-            this.frameAnalysisToolStripMenuItem.CheckedChanged += new System.EventHandler(this.frameAnalysisToolStripMenuItem_CheckedChanged);
             // 
             // MemTracerForm
             // 

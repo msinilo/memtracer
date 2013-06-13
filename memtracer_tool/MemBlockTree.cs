@@ -211,7 +211,7 @@ namespace MemTracer
                 }
             }
 
-            uint[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
+            ulong[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
             Node rootNode = root.FindChildByCallAddress(callStack[rootIndex], true);
             IStackTracer stackTracer = MemTracerForm.ms_MainForm.StackTracer;
             if (rootNode == null)
@@ -222,7 +222,7 @@ namespace MemTracer
             Node parentNode = rootNode;
             for (int i = rootIndex + 1; i < callStack.Length; ++i)
             {
-                uint callAddress = callStack[i];
+                ulong callAddress = callStack[i];
                 Node thisNode = parentNode.FindChildByCallAddress(callAddress, false);
 
                 if (thisNode == null)
@@ -257,7 +257,7 @@ namespace MemTracer
                 }
             }
 
-            uint[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
+            ulong[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
             Node rootNode = root.FindChildByCallAddress(callStack[rootIndex], true);
             IStackTracer stackTracer = MemTracerForm.ms_MainForm.StackTracer;
             if (rootNode == null)
@@ -268,7 +268,7 @@ namespace MemTracer
             Node parentNode = rootNode;
             for (int i = rootIndex + 1; i < callStack.Length; ++i)
             {
-                uint callAddress = callStack[i];
+                ulong callAddress = callStack[i];
                 Node thisNode = parentNode.FindChildByCallAddress(callAddress, false);
 
                 if (thisNode == null)
@@ -302,7 +302,7 @@ namespace MemTracer
                 }
             }
 
-            uint[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
+            ulong[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
             int rootIndex = callStack.Length - 1;
             Node rootNode = root.FindChildByCallAddress(callStack[rootIndex], true);
             IStackTracer stackTracer = MemTracerForm.ms_MainForm.StackTracer;
@@ -314,7 +314,7 @@ namespace MemTracer
             Node parentNode = rootNode;
             for (int i = rootIndex - 1; i >= endIndex; --i)
             {
-                uint callAddress = callStack[i];
+                ulong callAddress = callStack[i];
                 Node thisNode = parentNode.FindChildByCallAddress(callAddress, false);
 
                 if (thisNode == null)

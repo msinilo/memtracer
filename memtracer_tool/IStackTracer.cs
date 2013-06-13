@@ -13,12 +13,12 @@ namespace MemTracer
             public string functionName;
             public string fileName;
             public uint line;
-            public uint address;
+            public ulong address;
             public ulong functionAddress;
         };
 
         public abstract void AddModuleInfo(string pdbName, ulong moduleBase, ulong moduleSize);
-        public abstract Symbol GetSymbolForAddress(uint addr);
+        public abstract Symbol GetSymbolForAddress(ulong addr);
 
         public abstract void Serialize(Stream s, BinaryFormatter formatter);
         public abstract void Deserialize(Stream s, BinaryFormatter formatter);

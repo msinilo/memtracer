@@ -6,7 +6,7 @@ namespace MemTracer
 {
     class CallstackTab
     {
-        public static ulong CalcCRC(uint[] callStack)
+        public static ulong CalcCRC(ulong[] callStack)
         {
             ulong crc = 0;
             CRC32.Init(ref crc);
@@ -21,23 +21,23 @@ namespace MemTracer
         {
             return m_callStackMap.ContainsKey(crc);
         }
-        public static void AddCallStack(ulong crc, uint[] callStack)
+        public static void AddCallStack(ulong crc, ulong[] callStack)
         {
             if (!HasCallStack(crc))
                 m_callStackMap.Add(crc, callStack);
             else
             {
-                uint[] otherCs = GetCallStack(crc);
+                ulong[] otherCs = GetCallStack(crc);
                 System.Diagnostics.Debug.Assert(otherCs.Length == callStack.Length);
                 for (int i = 0; i < callStack.Length; ++i)
                     System.Diagnostics.Debug.Assert(callStack[i] == otherCs[i]);
             }
         }
-        public static uint[] GetCallStack(ulong crc)
+        public static ulong[] GetCallStack(ulong crc)
         {
             return m_callStackMap[crc];
         }
 
-        public static Dictionary<ulong, uint[]> m_callStackMap = new Dictionary<ulong, uint[]>();
+        public static Dictionary<ulong, ulong[]> m_callStackMap = new Dictionary<ulong, ulong[]>();
     }
 }

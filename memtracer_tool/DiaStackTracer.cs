@@ -35,11 +35,11 @@ namespace MemTracer
                 baseAddress = modBase;
                 return true;
             }
-            public bool ContainsAddress(uint addr)
+            public bool ContainsAddress(ulong addr)
             {
                 return addr >= baseAddress && addr < baseAddress + size;
             }
-            public void GetSymbolForAddress(uint addr, ref Symbol ret)
+            public void GetSymbolForAddress(ulong addr, ref Symbol ret)
             {
                 IDiaSymbol symbol = null;
                 SymTagEnum tagEnum = SymTagEnum.SymTagFunction;
@@ -86,7 +86,7 @@ namespace MemTracer
                 m_modules.Add(info);
         }
 
-        public override Symbol GetSymbolForAddress(uint addr)
+        public override Symbol GetSymbolForAddress(ulong addr)
         {
             if (addr == 0)
                 return m_emptySymbol;
@@ -126,7 +126,7 @@ namespace MemTracer
         }
 
         List<ModuleInfo> m_modules = new List<ModuleInfo>();
-        Dictionary<uint, Symbol> m_symbols = new Dictionary<uint, Symbol>();
+        Dictionary<ulong, Symbol> m_symbols = new Dictionary<ulong, Symbol>();
         Symbol m_emptySymbol = new Symbol();
     }
 }

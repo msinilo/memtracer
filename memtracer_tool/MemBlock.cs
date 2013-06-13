@@ -7,7 +7,7 @@ namespace MemTracer
     [Serializable]
     public class MemBlock
     {
-        private static bool IsSymbolValid(int i, uint[] callStack)
+        private static bool IsSymbolValid(int i, ulong[] callStack)
         {
             if (callStack[i] == 0)
                 return false;
@@ -17,7 +17,7 @@ namespace MemTracer
         }
         public int FindFirstValidSymbolIndex()
         {
-            uint[] callStack = CallstackTab.GetCallStack(m_callStackCRC);
+            ulong[] callStack = CallstackTab.GetCallStack(m_callStackCRC);
             for (int i = 0; i < callStack.Length; ++i)
             {
                 if (IsSymbolValid(i, callStack))
@@ -25,9 +25,9 @@ namespace MemTracer
             }
             return -1;
         }
-        public int FindFirstValidSymbolIndex(uint addr)
+        public int FindFirstValidSymbolIndex(ulong addr)
         {
-            uint[] callStack = CallstackTab.GetCallStack(m_callStackCRC);
+            ulong[] callStack = CallstackTab.GetCallStack(m_callStackCRC);
             for (int i = 0; i < callStack.Length; ++i)
             {
                 if (callStack[i] == addr && IsSymbolValid(i, callStack))
@@ -40,9 +40,9 @@ namespace MemTracer
         {
             return m_callStackCRC == other.m_callStackCRC;
         }
-        public bool DoesCallStackContainAddress(uint addr)
+        public bool DoesCallStackContainAddress(ulong addr)
         {
-            uint[] callStack = CallstackTab.GetCallStack(m_callStackCRC);
+            ulong[] callStack = CallstackTab.GetCallStack(m_callStackCRC);
             for (int i = 0; i < callStack.Length; ++i)
             {
                 if (callStack[i] == addr)
@@ -70,7 +70,7 @@ namespace MemTracer
             return tagString;
         }
 
-        public uint m_address = 0;
+        public ulong m_address = 0;
         public uint m_size = 0;
         public ulong m_callStackCRC = 0;
         public ulong m_tag = 0;

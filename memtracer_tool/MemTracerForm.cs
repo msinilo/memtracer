@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using CustomUIControls.Graphing;
+using System.Xml.Serialization;
 
 namespace MemTracer
 {
@@ -42,6 +43,7 @@ namespace MemTracer
         DelegateAddModuleInfo m_delegateAddModuleInfo;
         bool m_dirty = true;
         bool m_initialized = false;
+        bool m_64bit = false;
         Dictionary<string, int> m_tracedVars = new Dictionary<string, int>();
         int m_selectedSnapshotIndex = -1;
         int m_numMemOpsPrevFrame = 0;
@@ -76,6 +78,7 @@ namespace MemTracer
 
             ms_MainForm = this;
 
+            LoadConfig(kConfigFileName);
             StackTracer = new DiaStackTracer();
 
             EnableTabPage(tabPageFrameSnapshot, IsFrameAnalysisEnabled());
@@ -200,9 +203,31 @@ namespace MemTracer
             SetControlButtonsState(false);
         }
 
+        static private ulong GetInt64(byte[] data, int index)
+        {
+            ulong result = 0;
+            byte shift = 0;
+            for (int i = 0; i < 8; ++i)
+            {
+                result += (ulong)data[i + index] << shift;
+                shift += 8;
+            }
+            return (result);
+        }
         static private uint GetInt(byte[] data, int i)
         {
             return (uint)((data[i + 3] << 24) + (data[i + 2] << 16) + (data[i + 1] << 8) + (data[i + 0]));
+        }
+        private ulong GetAddress(byte[] data, int index)
+        {
+            if (m_64bit)
+            {
+                return GetInt64(data, index);
+            }
+            else
+            {
+                return GetInt(data, index);
+            }
         }
         private static string GetStringFromBuffer(byte[] data, int dataIdx, int maxLen)
         {
@@ -223,6 +248,15 @@ namespace MemTracer
                 case SocketPacket.CommandID.INITIAL_SETTINGS:
                     {
                         int platform = (int)msgData[1];
+
+                        //if (platform == 2)
+                        //{
+                        //    PS3StackTracer ps3tracer = new PS3StackTracer(m_config.PS3BinPath,
+                        //                                    m_config.Verbose, m_config.UseCr,
+                        //                                    m_config.UseError);
+                        //    StackTracer = ps3tracer;
+                        //}
+
                         m_maxTagLen = (int)msgData[2];
                         m_maxSnapshotNameLen = (int)msgData[3];
                         m_maxTracedVarNameLen = (int)msgData[4];
@@ -234,9 +268,18 @@ namespace MemTracer
 
                 case SocketPacket.CommandID.MODULE_INFO:
                     {
-                        ulong modBase = GetInt(msgData, 1);
-                        ulong modSize = GetInt(msgData, 5);
-                        string debugFileName = GetStringFromBuffer(msgData, 9, 128);
+                        ulong modBase = GetAddress(msgData, 1);
+                        int addressSize = 4;
+                        if (m_64bit)
+                        {
+                            addressSize = 8;
+                        }
+                        int offset = 1 + addressSize;
+                        
+                        ulong modSize = GetInt(msgData, offset);
+                        offset += 4;
+
+                        string debugFileName = GetStringFromBuffer(msgData, offset, 128);
                         Invoke(m_delegateAddModuleInfo, new Object[] { debugFileName, modBase, modSize });
                         m_initialized = true;
                         break;
@@ -318,15 +361,22 @@ namespace MemTracer
         private void HandleAlloc(byte[] msgData)
         {
             MemBlock memBlock = new MemBlock();
-            memBlock.m_address = GetInt(msgData, 1);
-            memBlock.m_size = GetInt(msgData, 5);
-            memBlock.m_tag = GetInt(msgData, 9);
-            int stackDepth = (int)msgData[13];
+            int addressSize = 4;
+            if (m_64bit)
+            {
+                addressSize = 8;
+            }
+
+            memBlock.m_address = GetAddress(msgData, 1);
+            memBlock.m_size = GetInt(msgData, 1 + addressSize);
+            memBlock.m_tag = GetInt(msgData, 1 + addressSize + 4);
+            int stackDepth = (int)msgData[1 + addressSize + 8];
             System.Diagnostics.Debug.Assert(stackDepth > 0 && stackDepth < 100);
-            uint[] callStack = new uint[stackDepth];
+            ulong[] callStack = new ulong[stackDepth];
+            int callstackStart = 1 + addressSize + 9;
             for (int i = 0; i < stackDepth; ++i)
             {
-                callStack[i] = GetInt(msgData, 14 + i * 4);
+                callStack[i] = GetAddress(msgData, callstackStart + i * addressSize);
             }
             memBlock.m_callStackCRC = CallstackTab.CalcCRC(callStack);
             CallstackTab.AddCallStack(memBlock.m_callStackCRC, callStack);
@@ -450,7 +500,7 @@ namespace MemTracer
             m_snapshots = formatter.Deserialize(s) as List<SnapshotDesc>;
             m_numFrames = (int)formatter.Deserialize(s);
             m_mostAllocatedBlocks = formatter.Deserialize(s) as int[];
-            CallstackTab.m_callStackMap = formatter.Deserialize(s) as Dictionary<ulong, uint[]>;
+            CallstackTab.m_callStackMap = formatter.Deserialize(s) as Dictionary<ulong, ulong[]>;
             TagDict.m_tags = formatter.Deserialize(s) as Dictionary<ulong, string>;
 
             foreach (SnapshotDesc snapDesc in m_snapshots)
@@ -880,5 +930,41 @@ namespace MemTracer
         {
             return frameAnalysisToolStripMenuItem.Checked && m_numFrames > 0;
         }
+
+        void LoadConfig(string fileName)
+        {
+            XmlSerializer s = new XmlSerializer(m_config.GetType());
+            try
+            {
+                TextReader r = new StreamReader(fileName);
+                m_config = s.Deserialize(r) as Config;
+                r.Close();
+            }
+            catch
+            { 
+            }
+        }
+        void SaveConfig(string fileName)
+        {
+            XmlSerializer s = new XmlSerializer(m_config.GetType());
+            TextWriter w = new StreamWriter(fileName, false);
+            s.Serialize(w, m_config);
+            w.Close();
+        }
+
+        public class Config
+        {
+            public string PS3BinPath
+            {
+                get { return m_ps3BinPath; }
+                set { m_ps3BinPath = value; }
+            }
+            string m_ps3BinPath = "c:\\ps3bin.exe";
+            public bool Verbose { get; set; }
+            public bool UseCr { get; set; }
+            public bool UseError { get; set; }
+        };
+        const string kConfigFileName = "config.xml";
+        Config m_config = new Config();
     }
 }

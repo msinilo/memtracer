@@ -111,14 +111,14 @@ namespace MemTracer
         }
 
 
-        public Dictionary<uint, MemBlock> Blocks { get { return m_blocks; } }
+        public Dictionary<ulong, MemBlock> Blocks { get { return m_blocks; } }
         public int NumAllocatedBlocks { get { return m_blocks.Count; } }
         public uint NumAllocatedBytes { get { return m_allocatedBytes; } }
         public int TopAllocatedBlocks { get { return m_topAllocatedBlocks; } }
         public uint TopAllocatedBytes { get { return m_topAllocatedBytes; } }
         public uint LargestAllocation { get { return m_largestAllocation; } }
 
-        Dictionary<uint, MemBlock> m_blocks = new Dictionary<uint, MemBlock>();
+        Dictionary<ulong, MemBlock> m_blocks = new Dictionary<ulong, MemBlock>();
         uint m_allocatedBytes = 0;
         uint m_topAllocatedBytes = 0;
         uint m_largestAllocation = 0;

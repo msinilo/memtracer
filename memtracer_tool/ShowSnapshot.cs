@@ -56,6 +56,12 @@ namespace MemTracer
         }
         private void OpenSourceFile(MemBlockTree.Node node)
         {
+            if (node.Symbol.fileName == null)
+            {
+                label1.Text = "";
+                return;
+            }
+
             try
             {
                 this.richTextBox1.LoadFile(node.Symbol.fileName, RichTextBoxStreamType.PlainText);

@@ -69,7 +69,7 @@ namespace MemTracer
             treeView1.Nodes.Add(opText);
             TreeNode n = treeView1.Nodes[treeView1.Nodes.Count - 1];
 
-            uint[] callStack = CallstackTab.GetCallStack(mb.m_callStackCRC);
+            ulong[] callStack = CallstackTab.GetCallStack(mb.m_callStackCRC);
             foreach (uint callStackEntry in callStack)
             {
                 IStackTracer.Symbol symbol = MemTracerForm.ms_MainForm.StackTracer.GetSymbolForAddress(callStackEntry);

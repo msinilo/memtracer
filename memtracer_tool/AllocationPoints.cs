@@ -17,7 +17,7 @@ namespace MemTracer
             public IStackTracer.Symbol symbol;
             public int numBytes;
             public int numBlocks;
-            public uint address;
+            public ulong address;
         }
 
         public AllocationPoints()
@@ -54,7 +54,7 @@ namespace MemTracer
             }
         }
 
-        private int FindRowIndexForCallerAddress(uint address)
+        private int FindRowIndexForCallerAddress(ulong address)
         {
             for (int i = 0; i < dataGridAllocs.Rows.Count; ++i)
             {
@@ -69,7 +69,7 @@ namespace MemTracer
             if (rootIndex < 0)
                 return;
 
-            uint[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
+            ulong[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
             for (int i = rootIndex; i < callStack.Length; ++i)
             {
                 IStackTracer.Symbol symbol = MemTracerForm.ms_MainForm.StackTracer.GetSymbolForAddress(callStack[i]);

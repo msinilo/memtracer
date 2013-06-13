@@ -12,7 +12,7 @@ namespace MemTracer
         public override void AddModuleInfo(string pdbName, ulong moduleBase, ulong moduleSize)
         {
         }
-        public override Symbol GetSymbolForAddress(uint addr)
+        public override Symbol GetSymbolForAddress(ulong addr)
         {
             Symbol retSymbol;
             if (m_symbols.TryGetValue(addr, out retSymbol))
@@ -34,6 +34,6 @@ namespace MemTracer
         {
         }
 
-        static Dictionary<uint, Symbol> m_symbols = new Dictionary<uint, Symbol>();
+        static Dictionary<ulong, Symbol> m_symbols = new Dictionary<ulong, Symbol>();
     }
 }

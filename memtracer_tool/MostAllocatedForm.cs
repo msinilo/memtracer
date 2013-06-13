@@ -122,7 +122,7 @@ namespace MemTracer
                     ttText = ttText + "Tag: " + blockTag + "\n----------------------\n";
                 }
 
-                uint[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
+                ulong[] callStack = CallstackTab.GetCallStack(block.m_callStackCRC);
                 for (int i = 0; i < callStack.Length; ++i)
                 {
                     IStackTracer.Symbol symbol = MemTracerForm.ms_MainForm.StackTracer.GetSymbolForAddress(callStack[i]);
