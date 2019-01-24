@@ -110,6 +110,16 @@ namespace MemTracer
 
             public byte[] dataBuffer;
         }
+        struct ClientPlatform
+        {
+            public enum Platform
+            {
+                WINDOWS_32,
+                WINDOWS_64,
+                XENON,
+                PS3
+            };
+        }
 
         public void WaitForData()
         {
@@ -247,7 +257,7 @@ namespace MemTracer
             {
                 case SocketPacket.CommandID.INITIAL_SETTINGS:
                     {
-                        int platform = (int)msgData[1];
+                        ClientPlatform.Platform platform = (ClientPlatform.Platform)msgData[1];
 
                         //if (platform == 2)
                         //{
@@ -256,6 +266,8 @@ namespace MemTracer
                         //                                    m_config.UseError);
                         //    StackTracer = ps3tracer;
                         //}
+
+                        m_64bit = (platform == ClientPlatform.Platform.WINDOWS_64);
 
                         m_maxTagLen = (int)msgData[2];
                         m_maxSnapshotNameLen = (int)msgData[3];
@@ -293,7 +305,7 @@ namespace MemTracer
 
                 case SocketPacket.CommandID.FREE:
                     {
-                        uint addr = GetInt(msgData, 1);
+                        ulong addr = GetAddress(msgData, 1);
                         MemOperation op = new MemOperation(MemOperation.Type.Free);
                         op.UserData = addr;
                         m_memOperations.Add(op);
@@ -580,7 +592,7 @@ namespace MemTracer
                 if (op.OpType == MemOperation.Type.Alloc)
                     snapshot.AddBlock(op.UserData as MemBlock);
                 else if (op.OpType == MemOperation.Type.Free)
-                    snapshot.RemoveBlock((uint)op.UserData);
+                    snapshot.RemoveBlock((ulong)op.UserData);
             }
 
             return snapshot;
@@ -593,7 +605,7 @@ namespace MemTracer
                 if (op.OpType == MemOperation.Type.Alloc)
                     snapshot.AddBlock(op.UserData as MemBlock);
                 else if (op.OpType == MemOperation.Type.Free)
-                    snapshot.RemoveBlock((uint)op.UserData);
+                    snapshot.RemoveBlock((ulong)op.UserData);
                 /*else
                 {
                     int breakh = 1;
@@ -817,7 +829,7 @@ namespace MemTracer
                 if (op.OpType == MemOperation.Type.Alloc)
                     snapshot.AddBlock(op.UserData as MemBlock);
                 else if (op.OpType == MemOperation.Type.Free)
-                    snapshot.RemoveBlock((uint)op.UserData);
+                    snapshot.RemoveBlock((ulong)op.UserData);
                 else if (op.OpType == MemOperation.Type.FrameEnd)
                     ++frames;
 

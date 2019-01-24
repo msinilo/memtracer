@@ -30,7 +30,13 @@ using rde::uint32;
 using rde::uint8;
 
 const size_t	kMaxPacketSize			= 256;
-const size_t	kMaxRuntimePacketSize	= 128;
+
+#ifdef RDE_X64
+const size_t	kMaxRuntimePacketSize = 192;
+#else
+const size_t	kMaxRuntimePacketSize = 128;
+#endif
+
 const size_t	kMaxCallStackDepth		= 20;
 const size_t	kMaxTagLen				= 64;
 const size_t	kMaxSnapshotNameLen		= 32;
@@ -51,8 +57,6 @@ inline uint32 ByteSwap32(uint32 i)
 	return (0xFF & i) << 24 | (0xFF00 & i) << 8 | (0xFF0000 & i) >> 8 | (0xFF000000 & i) >> 24;
 }
 
-// For the time being only 32-bit pointers are supported.
-// Compile time error for other architectures.
 template<size_t N> struct PtrSizeHelper {};
 template<> struct PtrSizeHelper<4>
 {
@@ -61,6 +65,14 @@ template<> struct PtrSizeHelper<4>
 		return ByteSwap32((uint32)a);
 	}
 };
+template<> struct PtrSizeHelper<8>
+{
+	static uintptr_t ByteSwapAddress(uintptr_t a)
+	{
+		return a;
+	}
+};
+
 inline Address ByteSwapAddress(Address a)
 {
 	return (Address)PtrSizeHelper<sizeof(Address)>::ByteSwapAddress((uintptr_t)a);
@@ -82,7 +94,11 @@ struct InitialSettingsPacket
 	InitialSettingsPacket() 
 	:	messageSize(0),
 		command(MemTracer::CommandId::INITIAL_SETTINGS),
-		platform(MemTracer::Platform::WINDOWS),
+#ifdef RDE_X64
+		platform(MemTracer::Platform::WINDOWS_64),
+#else
+		platform(MemTracer::Platform::WINDOWS_32),
+#endif
 		maxTagLen(kMaxTagLen),
 		maxSnapshotNameLen(kMaxSnapshotNameLen),
 		maxTracedVarNameLen(kMaxTracedVarNameLen)
@@ -111,7 +127,7 @@ struct ModuleInfoPacket
 
 	size_t PrepareToSend()
 	{
-		info.moduleBase = ByteSwapToNet32(info.moduleBase);
+		info.moduleBase = ByteSwapAddress(info.moduleBase);
 		info.moduleSize = ByteSwapToNet32(info.moduleSize);
 		messageSize = sizeof(ModuleInfoPacket) - 1;
 		return messageSize + 1;
@@ -150,8 +166,13 @@ struct AllocInfo
 	Address	callStack[kMaxCallStackDepth];
 };
 RDE_COMPILE_CHECK(kMaxCallStackDepth < 256);
+#ifdef RDE_X64
+RDE_COMPILE_CHECK(sizeof(AllocInfo) == sizeof(Address) + 9 + sizeof(Address) * kMaxCallStackDepth);
+RDE_COMPILE_CHECK(sizeof(AllocInfo) < kMaxPacketSize);
+#else
 RDE_COMPILE_CHECK(sizeof(AllocInfo) == 13 + sizeof(Address) * kMaxCallStackDepth);
 RDE_COMPILE_CHECK(sizeof(AllocInfo) < kMaxPacketSize);
+#endif
 RDE_COMPILE_CHECK(sizeof(AllocInfo) < kMaxRuntimePacketSize);
 
 struct FreeInfo
@@ -464,6 +485,11 @@ struct MemTracerImpl
 		m_packetBuffersLock = m_hooks.m_pfnMutexCreate();
 		RDE_ASSERT(m_packetBuffersLock);
 
+		if (m_hooks.m_pfnInit)
+		{
+			m_hooks.m_pfnInit();
+		}
+
 		return m_packetBuffers != 0 && m_packetBuffersLock != 0;
 	}
 	void Close(MemTracer::ThreadHandle hThread)
@@ -694,7 +720,8 @@ void MemTracer_ThreadFunc(MemTracerImpl* tracer)
 namespace MemTracer
 {
 FunctionHooks::FunctionHooks()
-:	m_pfnThreadFork(&DefaultThreadFork),
+:	m_pfnInit(&InitDefaultFunctions),
+	m_pfnThreadFork(&DefaultThreadFork),
 	m_pfnThreadJoin(&DefaultThreadJoin),
 	m_pfnMutexCreate(&DefaultMutexCreate),
 	m_pfnMutexAcquire(&DefaultMutexAcquire),

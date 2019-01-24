@@ -45,14 +45,14 @@ namespace MemTracer
             treeView1.EndUpdate();
             m_snapshot = snapshot;
         }
-        void BuildTree(MemSnapshot snapshot, int maxMemOpNr)
+        void BuildTree(MemSnapshot snapshot, int minMemOpNo, int maxMemOpNo)
         {
             m_tree.Clear();
             treeView1.Nodes.Clear();
             foreach (MemBlock block in snapshot.Blocks.Values)
             {
                 int memOpNr = MemTracerForm.ms_MainForm.MemOperationNrForBlock(block);
-                if (memOpNr < maxMemOpNr)
+                if (memOpNr < maxMemOpNo && memOpNr > minMemOpNo)
                 {
                     if (m_detailed)
                         m_tree.AddMemBlockSubTree(block);
@@ -80,7 +80,7 @@ namespace MemTracer
         {
             m_doubleClickDelegate = dblClick;
         }
-        public void SetSubtreeRootAddress(uint addr)
+        public void SetSubtreeRootAddress(ulong addr)
         {
             m_tree.SubtreeRootAddress = addr;
             m_detailed = (addr != 0);
@@ -125,16 +125,16 @@ namespace MemTracer
             MemBlockTree.Node node = treeView1.SelectedNode.Tag as MemBlockTree.Node;
             if (node != null)
             {
-                SubtreeDetails dlg = new SubtreeDetails((uint)node.m_callAddress);
+                SubtreeDetails dlg = new SubtreeDetails(node.m_callAddress);
                 dlg.BuildTree(m_snapshot);
                 dlg.ShowDialog();
             }
         }
 
-        public void FilterOutEntriesNewerThan(int memOpNr)
+        public void FilterEntriesBetween(int minMemOpNo, int maxMemOpNo)
         {
-            if (memOpNr > 0)
-                BuildTree(m_snapshot, memOpNr);
+            if (minMemOpNo < maxMemOpNo)
+                BuildTree(m_snapshot, minMemOpNo, maxMemOpNo);
             else
                 BuildTree(m_snapshot);
         }

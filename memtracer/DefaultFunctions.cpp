@@ -10,6 +10,8 @@
 
 #pragma comment(lib, "dbghelp.lib")
 
+//CaptureStackBackTraceType func = (CaptureStackBackTraceType)(GetProcAddress(LoadLibrary("kernel32.dll"), "RtlCaptureStackBackTrace"));
+
 // Whether we should check stack trace call addresses with
 // IsBadReadPtr. It normally should not be necessary and slows DefaultCallStackGet
 // down quite a bit. However, there are situations, where walking the stack may
@@ -22,6 +24,12 @@ const int kMaxLoadedModules = 16;
 MemTracer::ModuleInfo	s_loadedModules[kMaxLoadedModules];
 int						s_numLoadedModules(0);
 
+#ifdef RDE_X64
+typedef USHORT(WINAPI *CaptureStackBackTraceType)(__in ULONG, __in ULONG, __out PVOID*, __out_opt PULONG);
+CaptureStackBackTraceType	s_captureStackBackTraceFunc = NULL;
+#endif
+
+#ifndef RDE_X64
 MemTracer::Address* GetNextStackFrame(MemTracer::Address* prevSP)
 {
 	MemTracer::Address* newSP = (MemTracer::Address*)(*prevSP);
@@ -35,6 +43,7 @@ MemTracer::Address* GetNextStackFrame(MemTracer::Address* prevSP)
 
 	return newSP;
 }
+#endif
 
 BOOL CALLBACK EnumerateModulesProc(PCSTR name, DWORD64 base, ULONG size, PVOID)
 {
@@ -46,7 +55,7 @@ BOOL CALLBACK EnumerateModulesProc(PCSTR name, DWORD64 base, ULONG size, PVOID)
 		if (s_numLoadedModules < kMaxLoadedModules && 
 			SymGetModuleInfo64(GetCurrentProcess(), base, &moduleInfo))
 		{
-			s_loadedModules[s_numLoadedModules].moduleBase = (unsigned long)(base & 0xFFFFFFFF);
+			s_loadedModules[s_numLoadedModules].moduleBase = reinterpret_cast<MemTracer::Address>(base);
 			s_loadedModules[s_numLoadedModules].moduleSize = size;
 			strncpy(s_loadedModules[s_numLoadedModules].debugInfoFile, moduleInfo.LoadedPdbName,
 				sizeof(s_loadedModules[s_numLoadedModules].debugInfoFile) - 1);
@@ -93,12 +102,24 @@ __forceinline bool IsPtrOk(const void*) { return true; }
 
 namespace MemTracer
 {
+void InitDefaultFunctions()
+{
+#ifdef RDE_X64
+	const HMODULE hLib = LoadLibrary("kernel32.dll");
+	if (hLib)
+	{
+		s_captureStackBackTraceFunc = reinterpret_cast<CaptureStackBackTraceType>(GetProcAddress(hLib, "RtlCaptureStackBackTrace"));
+	}
+#endif
+}
+
 ThreadHandle DefaultThreadFork(ThreadFunction* function, void* arg, size_t stackSize)
 {
 	const DWORD creationFlags = 0x0;
 	uintptr_t hThread = ::_beginthreadex(NULL, (unsigned)stackSize, function, arg, creationFlags, NULL);
 	return (ThreadHandle)hThread;
 }
+
 void DefaultThreadJoin(ThreadHandle h)
 {
     DWORD waitRc = WaitForSingleObject(h, INFINITE);
@@ -141,11 +162,18 @@ void DefaultModuleInfo_Get(int i, ModuleInfo& outModuleInfo)
 
 int DefaultCallStackGet(Address* callStack, int maxDepth, int numEntriesToSkip)
 {
+	int numEntries(0);
+
+#ifdef RDE_X64
+	if (s_captureStackBackTraceFunc)
+	{
+		numEntries = s_captureStackBackTraceFunc(numEntriesToSkip, maxDepth, const_cast<PVOID*>(callStack), NULL);
+	}
+#else
 	uintptr_t ebpReg;
 	__asm mov [ebpReg], ebp
 	Address* sp = (Address*)ebpReg;
 
-	int numEntries(0);
 	while (sp && numEntries < maxDepth)
 	{
 		if (!IsPtrOk(sp + 1))
@@ -158,6 +186,7 @@ int DefaultCallStackGet(Address* callStack, int maxDepth, int numEntriesToSkip)
 
 		sp = ::GetNextStackFrame(sp);
 	}
+#endif
 	return numEntries;
 }
 

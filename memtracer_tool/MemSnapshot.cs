@@ -8,7 +8,7 @@ namespace MemTracer
     {
         public void AddBlock(MemBlock block)
         {
-            //System.Console.Out.Write("Adding " + block.m_address.ToString("X") + "\n");
+            ///System.Console.Out.Write("Adding " + block.m_address.ToString("X") + "\n");
             /*MemBlock block2 = null;
             if (m_blocks.TryGetValue(block.m_address, out block2))
             {
@@ -34,7 +34,7 @@ namespace MemTracer
                     m_largestAllocation = block.m_size;
             }
         }
-        public void RemoveBlock(uint address)
+        public void RemoveBlock(ulong address)
         {
             //System.Console.Out.Write("Freeing " + address.ToString("X") + "\n");
             MemBlock block = null;

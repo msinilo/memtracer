@@ -1,4 +1,4 @@
-#include "MemTracer/MemTracer.h"
+#include "MemTracer/MemTracerSingleHeader.h"
 
 #include <cstdio>
 #include <new>

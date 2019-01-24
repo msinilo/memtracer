@@ -10,7 +10,7 @@ namespace MemTracer
 {
     public partial class SubtreeDetails : Form
     {
-        public SubtreeDetails(uint rootAddress)
+        public SubtreeDetails(ulong rootAddress)
         {
             InitializeComponent();
             memAllocTree1.SetSubtreeRootAddress(rootAddress);
@@ -26,7 +26,7 @@ namespace MemTracer
         {
             if (e.KeyChar == 13)
             {
-                memAllocTree1.FilterOutEntriesNewerThan(System.Int32.Parse(tbFilter.Text));
+                memAllocTree1.FilterEntriesBetween(System.Int32.Parse(tbFilterMin.Text), System.Int32.Parse(tbFilterMax.Text));
             }
             else if (!char.IsDigit(e.KeyChar))
             {
@@ -36,7 +36,7 @@ namespace MemTracer
 
         private void button1_Click(object sender, EventArgs e)
         {
-            memAllocTree1.FilterOutEntriesNewerThan(System.Int32.Parse(tbFilter.Text));
+            memAllocTree1.FilterEntriesBetween(System.Int32.Parse(tbFilterMin.Text), System.Int32.Parse(tbFilterMax.Text));
         }
     }
 }

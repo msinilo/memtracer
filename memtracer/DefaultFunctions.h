@@ -13,6 +13,8 @@
 
 namespace MemTracer
 {
+void InitDefaultFunctions();
+
 ThreadHandle DefaultThreadFork(ThreadFunction* function, void* arg, size_t stackSize);
 void DefaultThreadJoin(ThreadHandle);
 

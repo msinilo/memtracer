@@ -31,8 +31,9 @@ namespace MemTracer
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.memAllocTree1 = new MemTracer.MemAllocTree();
             this.button1 = new System.Windows.Forms.Button();
-            this.tbFilter = new System.Windows.Forms.TextBox();
+            this.tbFilterMin = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.tbFilterMax = new System.Windows.Forms.TextBox();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -51,8 +52,9 @@ namespace MemTracer
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.tbFilterMax);
             this.splitContainer1.Panel2.Controls.Add(this.button1);
-            this.splitContainer1.Panel2.Controls.Add(this.tbFilter);
+            this.splitContainer1.Panel2.Controls.Add(this.tbFilterMin);
             this.splitContainer1.Panel2.Controls.Add(this.label1);
             this.splitContainer1.Size = new System.Drawing.Size(532, 341);
             this.splitContainer1.SplitterDistance = 289;
@@ -68,7 +70,7 @@ namespace MemTracer
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(131, 6);
+            this.button1.Location = new System.Drawing.Point(237, 6);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(63, 22);
             this.button1.TabIndex = 2;
@@ -76,13 +78,13 @@ namespace MemTracer
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // tbFilter
+            // tbFilterMin
             // 
-            this.tbFilter.Location = new System.Drawing.Point(38, 6);
-            this.tbFilter.Name = "tbFilter";
-            this.tbFilter.Size = new System.Drawing.Size(87, 20);
-            this.tbFilter.TabIndex = 1;
-            this.tbFilter.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbFilter_KeyPress);
+            this.tbFilterMin.Location = new System.Drawing.Point(38, 8);
+            this.tbFilterMin.Name = "tbFilterMin";
+            this.tbFilterMin.Size = new System.Drawing.Size(87, 20);
+            this.tbFilterMin.TabIndex = 1;
+            this.tbFilterMin.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbFilter_KeyPress);
             // 
             // label1
             // 
@@ -92,6 +94,13 @@ namespace MemTracer
             this.label1.Size = new System.Drawing.Size(29, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "Filter";
+            // 
+            // tbFilterMax
+            // 
+            this.tbFilterMax.Location = new System.Drawing.Point(131, 8);
+            this.tbFilterMax.Name = "tbFilterMax";
+            this.tbFilterMax.Size = new System.Drawing.Size(87, 20);
+            this.tbFilterMax.TabIndex = 3;
             // 
             // SubtreeDetails
             // 
@@ -113,9 +122,10 @@ namespace MemTracer
 
         private System.Windows.Forms.SplitContainer splitContainer1;
         private MemAllocTree memAllocTree1;
-        private System.Windows.Forms.TextBox tbFilter;
+        private System.Windows.Forms.TextBox tbFilterMin;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.TextBox tbFilterMax;
 
     }
 }

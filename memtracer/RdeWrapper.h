@@ -64,7 +64,7 @@ inline void Store_Release(T& dst, T v)
 	dst = v;
 }
 
-#if defined(PLATFORM_WIN32) || defined(PLATFORM_XENON)
+#if defined(PLATFORM_WINDOWS) || defined(PLATFORM_XENON)
 // Returns a new value of i
 inline Atomic32 AtomicInc(volatile Atomic32& i)
 {

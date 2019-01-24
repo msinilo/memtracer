@@ -4,6 +4,12 @@
 #define RDE_MEMTRACER_ENABLED		1
 #define RDE_MEMTRACER_STANDALONE	1
 
+#ifdef _M_X64
+#	define RDE_X64					1
+#endif
+
+#define PLATFORM_WINDOWS
+
 #include "RdeWrapper.h"
 #include <cstddef>
 
@@ -19,11 +25,12 @@ struct ModuleInfo
 {
 	enum { MAX_PATH_LEN	= 128 };		
 
-	unsigned long	moduleBase;
+	Address			moduleBase;
 	unsigned long	moduleSize;
 	char			debugInfoFile[MAX_PATH_LEN];
 };
 
+typedef void (Init_Function)();
 typedef unsigned (STDCALL ThreadFunction)(void* arg);
 typedef ThreadHandle (Thread_Fork)(ThreadFunction* function, void* arg, size_t stackSize);
 typedef void (Thread_Join)(ThreadHandle);
@@ -44,6 +51,7 @@ struct FunctionHooks
 	FunctionHooks() {}
 #endif
 
+	Init_Function*					m_pfnInit;
 	Thread_Fork*					m_pfnThreadFork;
 	Thread_Join*					m_pfnThreadJoin;
 	Mutex_Create*					m_pfnMutexCreate;
@@ -84,7 +92,8 @@ namespace Platform
 {
 	enum Enum
 	{
-		WINDOWS,
+		WINDOWS_32,
+		WINDOWS_64,
 		XENON,
 		PS3
 	};

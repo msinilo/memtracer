@@ -350,11 +350,11 @@ namespace MemTracer
             get { return m_tagged; }
             set { m_tagged = value; }
         }
-        public uint SubtreeRootAddress { set { m_subtreeRoot = value; } }
+        public ulong SubtreeRootAddress { set { m_subtreeRoot = value; } }
 
         Node m_root = new Node();
         bool m_bottomUp = true;
         bool m_tagged = false;
-        uint m_subtreeRoot = 0;
+        ulong m_subtreeRoot = 0;
     }
 }

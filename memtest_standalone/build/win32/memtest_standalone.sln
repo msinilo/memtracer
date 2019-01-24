@@ -1,39 +1,43 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memtest_standalone", "memtest_standalone.vcproj", "{0F022EE5-EE27-4DC0-CE69-87B027555063}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE} = {C0B619B4-EC3F-2048-7B35-1F552869BAAE}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memtracer", "..\..\..\memtracer\build\win32\memtracer.vcproj", "{C0B619B4-EC3F-2048-7B35-1F552869BAAE}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memtest_standalone", "memtest_standalone.vcxproj", "{0F022EE5-EE27-4DC0-CE69-87B027555063}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
 		Final|Win32 = Final|Win32
+		Final|x64 = Final|x64
 		Profile|Win32 = Profile|Win32
+		Profile|x64 = Profile|x64
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Debug|Win32.ActiveCfg = Debug|Win32
 		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Debug|Win32.Build.0 = Debug|Win32
+		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Debug|x64.ActiveCfg = Debug|x64
+		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Debug|x64.Build.0 = Debug|x64
 		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Final|Win32.ActiveCfg = Final|Win32
 		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Final|Win32.Build.0 = Final|Win32
+		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Final|x64.ActiveCfg = Final|x64
+		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Final|x64.Build.0 = Final|x64
 		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Profile|Win32.ActiveCfg = Profile|Win32
 		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Profile|Win32.Build.0 = Profile|Win32
+		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Profile|x64.ActiveCfg = Profile|x64
+		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Profile|x64.Build.0 = Profile|x64
 		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Release|Win32.ActiveCfg = Release|Win32
 		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Release|Win32.Build.0 = Release|Win32
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE}.Debug|Win32.ActiveCfg = Debug|Win32
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE}.Debug|Win32.Build.0 = Debug|Win32
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE}.Final|Win32.ActiveCfg = Final|Win32
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE}.Final|Win32.Build.0 = Final|Win32
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE}.Profile|Win32.ActiveCfg = Profile|Win32
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE}.Profile|Win32.Build.0 = Profile|Win32
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE}.Release|Win32.ActiveCfg = Release|Win32
-		{C0B619B4-EC3F-2048-7B35-1F552869BAAE}.Release|Win32.Build.0 = Release|Win32
+		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Release|x64.ActiveCfg = Release|x64
+		{0F022EE5-EE27-4DC0-CE69-87B027555063}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {41DE26A6-0503-41E6-B4D4-F4CB9CAA11E1}
 	EndGlobalSection
 EndGlobal
