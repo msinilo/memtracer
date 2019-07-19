@@ -49,7 +49,7 @@ namespace MemTracer
                 //System.Console.Out.Write("Cant free " + address.ToString("X") + "\n");
             }
         }
-        public void TagBlock(uint address, ulong tag)
+        public void TagBlock(ulong address, ulong tag)
         {
             MemBlock block = null;
             if (m_blocks.TryGetValue(address, out block))

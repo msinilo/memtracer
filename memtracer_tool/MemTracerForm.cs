@@ -44,6 +44,7 @@ namespace MemTracer
         bool m_dirty = true;
         bool m_initialized = false;
         bool m_64bit = false;
+        int m_addressSize = 4;
         Dictionary<string, int> m_tracedVars = new Dictionary<string, int>();
         int m_selectedSnapshotIndex = -1;
         int m_numMemOpsPrevFrame = 0;
@@ -268,6 +269,10 @@ namespace MemTracer
                         //}
 
                         m_64bit = (platform == ClientPlatform.Platform.WINDOWS_64);
+                        if (m_64bit)
+                        {
+                            m_addressSize = 8;
+                        }
 
                         m_maxTagLen = (int)msgData[2];
                         m_maxSnapshotNameLen = (int)msgData[3];
@@ -281,12 +286,7 @@ namespace MemTracer
                 case SocketPacket.CommandID.MODULE_INFO:
                     {
                         ulong modBase = GetAddress(msgData, 1);
-                        int addressSize = 4;
-                        if (m_64bit)
-                        {
-                            addressSize = 8;
-                        }
-                        int offset = 1 + addressSize;
+                        int offset = 1 + m_addressSize;
                         
                         ulong modSize = GetInt(msgData, offset);
                         offset += 4;
@@ -319,8 +319,8 @@ namespace MemTracer
 
                 case SocketPacket.CommandID.TAG_BLOCK:
                     {
-                        uint addr = GetInt(msgData, 1);
-                        string tag = GetStringFromBuffer(msgData, 5, m_maxTagLen);
+                        ulong addr = GetInt(msgData, 1);
+                        string tag = GetStringFromBuffer(msgData, (1 + m_addressSize), m_maxTagLen);
                         ulong crc = TagDict.AddTag(tag);
                         m_globalSnapshot.TagBlock(addr, crc);
                         break;
