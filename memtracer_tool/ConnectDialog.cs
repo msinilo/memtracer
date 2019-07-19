@@ -77,5 +77,10 @@ namespace MemTracer
             }
             return true;
         }
+
+        private void butLocalHost_Click(object sender, EventArgs e)
+        {
+            tbServer.Text = "127.0.0.1";
+        }
     }
 }
