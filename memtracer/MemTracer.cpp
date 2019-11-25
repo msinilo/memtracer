@@ -13,6 +13,7 @@
 #endif
 
 #include <cstring>	// strncpy
+#include <utility>
 
 // Setting this to true makes sure that messages sent in one batch
 // are ordered same as they were generated (when they come from different threads).
@@ -507,6 +508,7 @@ struct MemTracerImpl
 		m_packetBuffersLock = 0;
 		m_hooks.m_pfnThreadJoin(hThread);
 		m_packetCollection.Close();
+		MemTracer::Socket::ShutdownSockets(m_writeSocket);
 	}
 
 	bool IsConnected() const	{ return m_isConnected; }
@@ -616,38 +618,7 @@ struct MemTracerImpl
 	{
 		Log("MemTracer: Starting\n");
 
-		namespace Socket = MemTracer::Socket;
-		const bool blockingSocket = true;
-		Socket::Handle serverSocket = Socket::Create(blockingSocket);
-		if (!serverSocket)
-		{
-			Log("MemTracer: Couldn't create server socket.\n");
-			return;
-		}
-
-		if (!Socket::Listen(serverSocket, m_port))
-		{
-			Log("MemTracer: Couldn't configure server socket.\n");
-			Socket::Close(serverSocket);
-			return;
-		}
-
-		Log("MemTracer: Waiting for connection.\n");
-		while (!m_terminating)
-		{
-			if (Socket::TestConnection(serverSocket))
-				break;
-
-			rde::Thread::Sleep(100);
-		}
-		Log("MemTracer: Connected.\n");
-		m_writeSocket = Socket::Accept(serverSocket, kSocketBufferSize);
-		if (!m_writeSocket)
-		{
-			Log("MemTracer: Couldn't create write socket.\n");
-			Socket::Close(serverSocket);
-			return;
-		}
+		m_writeSocket = MemTracer::Socket::EstablishConnection(m_terminating, m_port);
 
 		OnConnection();
 
@@ -660,8 +631,6 @@ struct MemTracerImpl
 		// One last time, to send any outstanding packets out there.
 		SendAllPackets();
 
-		Socket::Close(m_writeSocket);
-		Socket::Close(serverSocket);
 		m_isConnected = false;
 	}
 
@@ -757,7 +726,6 @@ bool Init(FunctionHooks& hooks, unsigned short port, int maxTracedThreads, Block
 void Shutdown()
 {
 	s_tracer.Close(s_tracerThread);
-	Socket::ShutdownSockets();
 }
 
 void OnAlloc(const void* ptr, size_t bytes, Tag4CC tag)

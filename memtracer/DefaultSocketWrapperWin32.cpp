@@ -9,27 +9,13 @@
 
 namespace
 {
+	using MemTracer::Socket::Handle;
+
 SOCKET AsWinSocket(MemTracer::Socket::Handle h)
 {
 	return reinterpret_cast<SOCKET>(h);
 }
-}
-
-namespace MemTracer
-{
-bool Socket::InitSockets()
-{
-    WSADATA wsaData;
-    const int ret = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	return (ret == 0);
-}
-
-void Socket::ShutdownSockets()
-{
-	WSACleanup();
-}
-
-Socket::Handle Socket::Create(bool blocking)
+MemTracer::Socket::Handle Create(bool blocking)
 {
 	SOCKET winSocket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (winSocket == INVALID_SOCKET)
@@ -39,13 +25,13 @@ Socket::Handle Socket::Create(bool blocking)
 	return (ioctlsocket(winSocket, FIONBIO, &inonBlocking) == 0 ? Handle(winSocket) : Handle(0));
 }
 
-void Socket::Close(Handle& h)
+void Close(Handle& h)
 {
 	::closesocket(::AsWinSocket(h));
 	h = Handle(0);
 }
 
-bool Socket::Listen(Handle h, Port port)
+bool Listen(Handle h, MemTracer::Socket::Port port)
 {
 	sockaddr_in addr = { 0 };
 	addr.sin_addr.s_addr = INADDR_ANY;
@@ -67,13 +53,13 @@ bool Socket::Listen(Handle h, Port port)
 	return true;
 }
 
-bool Socket::TestConnection(Handle h)
+bool TestConnection(Handle h)
 {
 	SOCKET winSocket = ::AsWinSocket(h);
 
 	fd_set readSet;
 	FD_ZERO(&readSet);
-	FD_SET(winSocket, &readSet );
+	FD_SET(winSocket, &readSet);
 	timeval timeout = { 0, 17000 };
 	const int res = ::select(0, &readSet, 0, 0, &timeout);
 	if (res > 0)
@@ -84,7 +70,7 @@ bool Socket::TestConnection(Handle h)
 	return false;
 }
 
-Socket::Handle Socket::Accept(Handle listeningSocket, size_t bufferSize)
+Handle Accept(Handle listeningSocket, size_t bufferSize)
 {
 	typedef int socklen_t;
 	sockaddr_in addr;
@@ -99,6 +85,26 @@ Socket::Handle Socket::Accept(Handle listeningSocket, size_t bufferSize)
 		return Handle(outSocket);
 	}
 	return Handle(0);
+}
+
+}
+
+namespace MemTracer
+{
+bool Socket::InitSockets()
+{
+    WSADATA wsaData;
+    const int ret = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	return (ret == 0);
+}
+
+void Socket::ShutdownSockets(Handle& h)
+{
+	if (h)
+	{
+		::Close(h);
+	}
+	WSACleanup();
 }
 
 bool Socket::Write(Handle& h, const void* buffer, size_t bytes, size_t& outBytesWritten)
@@ -122,6 +128,50 @@ bool Socket::Write(Handle& h, const void* buffer, size_t bytes, size_t& outBytes
 	}
 	return outBytesWritten != 0;
 }
+
+Handle Socket::EstablishConnection(volatile bool& terminationFlag, unsigned short port)
+{
+	namespace Socket = MemTracer::Socket;
+
+	Socket::Handle result = NULL;
+
+	const bool blockingSocket = true;
+	Socket::Handle serverSocket = ::Create(blockingSocket);
+	if (!serverSocket)
+	{
+		//Log("MemTracer: Couldn't create server socket.\n");
+		return result;
+	}
+
+	if (!::Listen(serverSocket, port))
+	{
+		//Log("MemTracer: Couldn't configure server socket.\n");
+		::Close(serverSocket);
+		return result;
+	}
+
+	//Log("MemTracer: Waiting for connection.\n");
+	while (!terminationFlag)
+	{
+		if (::TestConnection(serverSocket))
+			break;
+
+		rde::Thread::Sleep(100);
+	}
+	//Log("MemTracer: Connected.\n");
+	result = ::Accept(serverSocket, kSocketBufferSize);
+	if (!result)
+	{
+		//Log("MemTracer: Couldn't create write socket.\n");
+		::Close(serverSocket);
+		return result;
+	}
+
+	::Close(serverSocket);
+
+	return result;
+}
+
 
 } // MemTracer
 

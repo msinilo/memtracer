@@ -15,21 +15,11 @@ typedef unsigned short	Port;
 
 // Called once at application start/end
 // (De)initializes the whole network/socket system.
+// Shutdown closes given handle too
 bool InitSockets();
-void ShutdownSockets();
+void ShutdownSockets(Handle& h);
 
-// Creates/initializes socket. Returns empty (NULL) handle on error.
-Handle Create(bool blocking);
-// Closes socket.
-void Close(Handle&);
-
-bool Listen(Handle, Port port);
-// Non-blocking, returns true if connected.
-bool TestConnection(Handle);
-// Returns handle of accepted socket.
-// bufferSize = sending/receiving buffers size in bytes.
-Handle Accept(Handle listeningSocket, size_t bufferSize);
-
+Handle EstablishConnection(volatile bool& terminationFlag, unsigned short port);
 bool Write(Handle& h, const void* buffer, size_t bytes, size_t& outBytesWritten);
 
 } // Socket
